@@ -173,7 +173,7 @@ function Header() {
   const { profile } = useAuth(); const navigate = useNavigate(); const [menu, setMenu] = useState(false);
   async function signOut() { await supabase.auth.signOut(); navigate('/'); }
   const initials = `${profile?.first_name?.[0] ?? ''}${profile?.last_name?.[0] ?? ''}`.toUpperCase() || profile?.username?.[0]?.toUpperCase() || 'S';
-  return <header className="site-header"><Link className="wordmark" to="/home">SCREENHUB</Link><nav><Link to="/home">Home</Link><a href="#catalog">Movies &amp; series</a></nav><div className="header-user"><button className="avatar" onClick={() => setMenu(!menu)} aria-label="Open account menu">{initials}</button>{menu && <div className="account-menu"><b>{[profile?.first_name, profile?.last_name].filter(Boolean).join(' ') || 'Your account'}</b><span>@{profile?.username}</span><Link to="/profile" onClick={() => setMenu(false)}>Edit profile</Link><button onClick={signOut}>Sign out</button></div>}</div></header>;
+  return <header className="site-header"><Link className="wordmark" to="/home">SCREENHUB</Link><nav><Link to="/home">Home</Link><a href="#catalog">Movies &amp; series</a></nav><div className="header-user"><button className="avatar" onClick={() => setMenu(!menu)} aria-label="Open account menu">{initials}{profile?.avatar && <img src={profile.avatar} alt="" onError={(event) => { event.currentTarget.style.display = 'none'; }} />}</button>{menu && <div className="account-menu"><b>{[profile?.first_name, profile?.last_name].filter(Boolean).join(' ') || 'Your account'}</b><span>@{profile?.username}</span><Link to="/profile" onClick={() => setMenu(false)}>Edit profile</Link><button onClick={signOut}>Sign out</button></div>}</div></header>;
 }
 
 function PosterRow({ title, items }) { return <section className="catalog-section" id="catalog"><div className="section-heading"><h2>{title}</h2><span>Explore all</span></div><div className="poster-row">{items.map((item) => <Link className="poster-card" to={item.title === 'Squid Game' ? '/series/squid-game' : '/home'} key={item.title}><div className="poster-placeholder" aria-label={`${item.title} poster placeholder`}><span>{item.title}</span></div><span>{item.title}</span></Link>)}</div></section>; }
@@ -190,18 +190,42 @@ function Home() {
 }
 
 function Profile() {
-  const { profile, session, setProfile } = useAuth(); const navigate = useNavigate(); const [username, setUsername] = useState(profile?.username ?? ''); const [password, setPassword] = useState(''); const [notice, setNotice] = useState(''); const [error, setError] = useState(''); const [busy, setBusy] = useState(false);
-  useEffect(() => { setUsername(profile?.username ?? ''); }, [profile]);
+  const { profile, session, setProfile } = useAuth(); const navigate = useNavigate(); const [username, setUsername] = useState(profile?.username ?? ''); const [avatar, setAvatar] = useState(profile?.avatar ?? ''); const [characterQuery, setCharacterQuery] = useState(''); const [characters, setCharacters] = useState([]); const [searching, setSearching] = useState(false); const [searchError, setSearchError] = useState(''); const [password, setPassword] = useState(''); const [notice, setNotice] = useState(''); const [error, setError] = useState(''); const [busy, setBusy] = useState(false);
+  useEffect(() => { setUsername(profile?.username ?? ''); setAvatar(profile?.avatar ?? ''); }, [profile]);
+  useEffect(() => {
+    const query = characterQuery.trim();
+    if (query.length < 2) { setCharacters([]); setSearchError(''); return undefined; }
+    const controller = new AbortController();
+    const timer = window.setTimeout(async () => {
+      setSearching(true); setSearchError('');
+      try {
+        const response = await fetch(`https://api.jikan.moe/v4/characters?q=${encodeURIComponent(query)}&limit=12`, { signal: controller.signal });
+        if (!response.ok) throw new Error(response.status === 429 ? 'Too many searches right now. Wait a few seconds and try again.' : 'Could not load anime characters. Please try again.');
+        const result = await response.json();
+        const choices = (result.data ?? []).map((character) => ({
+          id: character.mal_id,
+          name: character.name,
+          image: character.images?.webp?.image_url || character.images?.jpg?.image_url || character.images?.jpg?.small_image_url,
+        })).filter((character) => character.image);
+        setCharacters(choices);
+      } catch (requestError) {
+        if (requestError.name !== 'AbortError') setSearchError(requestError.message || 'Could not load anime characters.');
+      } finally {
+        if (!controller.signal.aborted) setSearching(false);
+      }
+    }, 500);
+    return () => { window.clearTimeout(timer); controller.abort(); };
+  }, [characterQuery]);
   async function save(event) {
     event.preventDefault(); setNotice(''); setError(''); setBusy(true);
-    const { error: profileError } = await supabase.from('profiles').update({ username: username.trim() }).eq('id', session.user.id);
+    const { error: profileError } = await supabase.from('profiles').update({ username: username.trim(), avatar: avatar || null }).eq('id', session.user.id);
     if (profileError) { setError(profileError.code === '23505' ? 'That username is already taken.' : profileError.message); setBusy(false); return; }
     let passwordError;
     if (password) ({ error: passwordError } = await supabase.auth.updateUser({ password }));
     setBusy(false);
-    if (passwordError) setError(passwordError.message); else { setProfile({ ...profile, username: username.trim() }); setPassword(''); setNotice('Your profile has been saved.'); }
+    if (passwordError) setError(passwordError.message); else { setProfile({ ...profile, username: username.trim(), avatar }); setPassword(''); setNotice('Your profile has been saved.'); }
   }
-  return <><Header /><main className="profile-page"><Link className="back-link" to="/home">← Back to ScreenHub</Link><div className="profile-panel"><div className="eyebrow">ACCOUNT</div><h1>Your profile</h1><p className="muted">Manage your username and sign-in details.</p><form className="form" onSubmit={save}><Field label="Username" value={username} onChange={setUsername} minLength={3} maxLength={30} required /><Field label="New password (leave blank to keep current)" type="password" value={password} onChange={setPassword} minLength={8} /><div className="profile-email"><span>Email</span><strong>{session?.user?.email}</strong><small>Email changes are managed through Supabase Auth.</small></div>{error && <p className="form-error">{error}</p>}{notice && <p className="form-success">{notice}</p>}<button className="primary-btn" disabled={busy}>{busy ? 'Saving…' : 'Save changes'}</button></form><button className="signout-link" onClick={async () => { await supabase.auth.signOut(); navigate('/'); }}>Sign out</button></div></main></>;
+  return <><Header /><main className="profile-page"><Link className="back-link" to="/home">← Back to ScreenHub</Link><div className="profile-panel"><div className="eyebrow">ACCOUNT</div><h1>Your profile</h1><p className="muted">Manage your username, anime avatar, and sign-in details.</p><form className="form" onSubmit={save}><Field label="Username" value={username} onChange={setUsername} minLength={3} maxLength={30} required /><div className="anime-avatar-picker"><label className="field"><span>Find an anime character</span><input type="search" value={characterQuery} onChange={(event) => setCharacterQuery(event.target.value)} placeholder="Try Naruto, Gojo, or Luffy" /></label><p className="avatar-help">Type at least two characters. Choose a result to preview it in your profile menu.</p>{searching && <p className="avatar-help">Searching characters…</p>}{searchError && <p className="form-error">{searchError}</p>}{characters.length > 0 && <div className="anime-avatar-grid">{characters.map((character) => <button type="button" key={character.id} className={avatar === character.image ? 'anime-avatar-choice selected' : 'anime-avatar-choice'} onClick={() => setAvatar(character.image)} aria-pressed={avatar === character.image}><img src={character.image} alt={character.name} loading="lazy" /><span>{character.name}</span></button>)}</div>}{avatar && <button className="clear-avatar" type="button" onClick={() => setAvatar('')}>Use initials instead</button>}<small className="avatar-credit">Character data via <a href="https://jikan.moe/" target="_blank" rel="noreferrer">Jikan</a>, an unofficial MyAnimeList API.</small></div><Field label="New password (leave blank to keep current)" type="password" value={password} onChange={setPassword} minLength={8} /><div className="profile-email"><span>Email</span><strong>{session?.user?.email}</strong><small>Email changes are managed through Supabase Auth.</small></div>{error && <p className="form-error">{error}</p>}{notice && <p className="form-success">{notice}</p>}<button className="primary-btn" disabled={busy}>{busy ? 'Saving…' : 'Save changes'}</button></form><button className="signout-link" onClick={async () => { await supabase.auth.signOut(); navigate('/'); }}>Sign out</button></div></main></>;
 }
 
 function Series() {
