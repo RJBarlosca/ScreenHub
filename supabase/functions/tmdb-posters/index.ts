@@ -32,81 +32,80 @@ type OpenMovie = {
   creator: string;
   license_url: string;
   license_name: string;
+  archive_title_contains: string;
+  archive_creator?: string;
   embed_url?: string;
 };
 
 const openMovies: OpenMovie[] = [
   {
-    identifier: 'BigBuckBunnyFULLHD60FPS',
-    title: 'Big Buck Bunny',
-    year: 2008,
-    runtime: '10 min',
-    genre: 'Animation',
-    genres: ['Animation', 'Comedy', 'Adventure'],
-    description: 'A giant rabbit enjoys a peaceful day in the meadow until three troublemaking rodents ruin it.',
-    creator: 'Blender Foundation',
-    license_url: 'https://creativecommons.org/licenses/by/3.0/',
-    license_name: 'Creative Commons Attribution 3.0',
-  },
-  {
-    identifier: 'sintel_20260427',
-    title: 'Sintel',
-    year: 2010,
-    runtime: '15 min',
-    genre: 'Fantasy',
-    genres: ['Animation', 'Fantasy', 'Adventure'],
-    description: 'A young woman sets out on a dangerous journey to find the dragon she raised as a child.',
-    creator: 'Blender Foundation',
-    license_url: 'https://creativecommons.org/licenses/by/3.0/',
-    license_name: 'Creative Commons Attribution 3.0',
-  },
-  {
-    identifier: 'CosmosLaundromatFirstCycle',
-    title: 'Cosmos Laundromat: First Cycle',
-    year: 2015,
-    runtime: '12 min',
-    genre: 'Fantasy',
-    genres: ['Animation', 'Fantasy', 'Comedy'],
-    description: 'On a desolate island, a sheep meets a strange salesman who promises a new beginning.',
-    creator: 'Blender Foundation',
-    license_url: 'https://creativecommons.org/licenses/by/4.0/',
-    license_name: 'Creative Commons Attribution 4.0',
-  },
-  {
-    identifier: 'ElephantsDream_628',
-    title: 'Elephants Dream',
-    year: 2006,
-    runtime: '11 min',
-    genre: 'Sci-Fi',
-    genres: ['Animation', 'Sci-Fi', 'Drama'],
-    description: 'Two travelers explore a surreal machine-world and discover how differently they see it.',
-    creator: 'Blender Foundation',
-    license_url: 'https://creativecommons.org/licenses/by/3.0/us/',
-    license_name: 'Creative Commons Attribution 3.0 US',
-  },
-  {
-    identifier: 'CaminandesLlamigos',
-    title: 'Caminandes 3: Llamigos',
-    year: 2016,
-    runtime: '3 min',
-    genre: 'Animation',
-    genres: ['Animation', 'Comedy', 'Adventure'],
-    description: 'Llama Koro and a penguin cross paths on the Patagonian plains.',
-    creator: 'Blender Foundation',
-    license_url: 'https://creativecommons.org/licenses/by/3.0/',
-    license_name: 'Creative Commons Attribution 3.0',
-  },
-  {
-    identifier: 'spring_blenderopenmovie',
-    title: 'Spring',
-    year: 2019,
-    runtime: '8 min',
-    genre: 'Fantasy',
-    genres: ['Animation', 'Fantasy', 'Adventure'],
-    description: 'A shepherd girl and her dog encounter ancient spirits in a forest valley.',
-    creator: 'Blender Foundation',
+    identifier: 'TheGeneral1926',
+    title: 'The General',
+    year: 1926,
+    runtime: '1h 19m',
+    genre: 'Adventure',
+    genres: ['Adventure', 'Comedy', 'Drama'],
+    description: 'A locomotive engineer races to recover his stolen train and rescue his fiancée during the American Civil War.',
+    creator: 'Buster Keaton and Clyde Bruckman',
     license_url: 'https://creativecommons.org/publicdomain/mark/1.0/',
-    license_name: 'Creative Commons Public Domain Mark 1.0',
+    license_name: 'Public Domain Mark 1.0 (Archive listing)',
+    archive_title_contains: 'thegeneral',
+    archive_creator: 'myretroflix.com',
+  },
+  {
+    identifier: 'the-killer-shrews-1959',
+    title: 'The Killer Shrews',
+    year: 1959,
+    runtime: '1h 09m',
+    genre: 'Horror',
+    genres: ['Horror', 'Sci-Fi', 'Thriller'],
+    description: 'A group of people stranded on an island must defend themselves from a pack of giant, aggressive shrews.',
+    creator: 'Ray Kellogg',
+    license_url: 'https://creativecommons.org/publicdomain/mark/1.0/',
+    license_name: 'Public Domain Mark 1.0 (Archive listing)',
+    archive_title_contains: 'thekillershrews',
+    archive_creator: 'Ray Kellogg',
+  },
+  {
+    identifier: 'd.-o.-a.-1950',
+    title: 'D.O.A.',
+    year: 1949,
+    runtime: '1h 23m',
+    genre: 'Thriller',
+    genres: ['Thriller', 'Crime', 'Mystery'],
+    description: 'After learning he has been poisoned, an accountant races against time to find out who killed him and why.',
+    creator: 'Rudolph Maté',
+    license_url: 'https://creativecommons.org/publicdomain/mark/1.0/',
+    license_name: 'Public Domain Mark 1.0 (Archive listing)',
+    archive_title_contains: 'doa1949',
+    archive_creator: 'Rudolph Maté',
+  },
+  {
+    identifier: 'TheLittleShopOfHorrors_201705',
+    title: 'The Little Shop of Horrors',
+    year: 1960,
+    runtime: '1h 12m',
+    genre: 'Comedy',
+    genres: ['Comedy', 'Horror'],
+    description: 'A shy florist and his co-workers discover that a strange plant has an appetite for more than water.',
+    creator: 'Roger Corman',
+    license_url: 'https://creativecommons.org/publicdomain/mark/1.0/',
+    license_name: 'Public Domain Mark 1.0 (Archive listing)',
+    archive_title_contains: 'thelittleshopofhorrors',
+  },
+  {
+    identifier: 'thebrainthatwouldntdie1962_202009',
+    title: "The Brain That Wouldn't Die",
+    year: 1962,
+    runtime: '1h 22m',
+    genre: 'Horror',
+    genres: ['Horror', 'Sci-Fi'],
+    description: 'A determined surgeon tries to bring his fiancée back to life after a laboratory accident.',
+    creator: 'Joseph Green',
+    license_url: 'https://creativecommons.org/publicdomain/mark/1.0/',
+    license_name: 'Public Domain Mark 1.0 (Archive listing)',
+    archive_title_contains: 'thebrainthatwouldntdie1962',
+    archive_creator: 'Joseph Green',
   },
 ];
 
@@ -130,7 +129,7 @@ Deno.serve(async (request) => {
   }
 
   if (payload?.action === 'free-movies') {
-    const verifiedMovies: OpenMovie[] = [];
+    const listedMovies: OpenMovie[] = [];
     let nextIndex = 0;
     const verifyNext = async () => {
       while (nextIndex < openMovies.length) {
@@ -147,10 +146,13 @@ Deno.serve(async (request) => {
           const sourceCreator = Array.isArray(metadata.metadata?.creator)
             ? metadata.metadata.creator.join(' ')
             : metadata.metadata?.creator;
-          const sourceLicense = typeof metadata.metadata?.licenseurl === 'string'
+          const sourceTitle = typeof metadata.metadata?.title === 'string'
+            ? normalizeTitle(metadata.metadata.title)
+            : '';
+          const sourceRightsLabel = typeof metadata.metadata?.licenseurl === 'string'
             ? metadata.metadata.licenseurl.replace(/^http:/, 'https:').replace(/\/$/, '')
             : '';
-          const expectedLicense = movie.license_url.replace(/\/$/, '');
+          const expectedRightsLabel = movie.license_url.replace(/\/$/, '');
           const hasPlayableVideo = Array.isArray(metadata.files) && metadata.files.some((file: { name?: unknown; format?: unknown }) =>
             typeof file.name === 'string' &&
             /\.mp4$/i.test(file.name) &&
@@ -158,25 +160,25 @@ Deno.serve(async (request) => {
             /mpeg4|h\.264/i.test(file.format)
           );
           if (
-            typeof sourceCreator !== 'string' ||
-            !sourceCreator.toLowerCase().includes('blender foundation') ||
-            sourceLicense !== expectedLicense ||
+            !sourceTitle.includes(movie.archive_title_contains) ||
+            (movie.archive_creator !== undefined && sourceCreator !== movie.archive_creator) ||
+            sourceRightsLabel !== expectedRightsLabel ||
             !hasPlayableVideo
           ) {
-            console.warn(`Internet Archive license or playable video verification failed for ${movie.identifier}.`);
+            console.warn(`Internet Archive listing, rights label, or playable video check failed for ${movie.identifier}.`);
             continue;
           }
-          verifiedMovies.push({ ...movie, embed_url: `https://archive.org/embed/${encodeURIComponent(movie.identifier)}` });
+          listedMovies.push({ ...movie, embed_url: `https://archive.org/embed/${encodeURIComponent(movie.identifier)}` });
         } catch (error) {
           console.warn(`Unable to verify free movie ${movie.identifier} with Internet Archive.`, error);
         }
       }
     };
     await Promise.all(Array.from({ length: Math.min(4, openMovies.length) }, verifyNext));
-    if (!verifiedMovies.length) {
-      return jsonResponse({ error: 'No movies could be verified with a free-play license and playable video. Please retry shortly.' }, 502);
+    if (!listedMovies.length) {
+      return jsonResponse({ error: 'No classic films are currently available with the expected Archive rights label and playable video. Please retry shortly.' }, 502);
     }
-    return jsonResponse({ movies: verifiedMovies });
+    return jsonResponse({ movies: listedMovies });
   }
 
   const token = Deno.env.get('TMDB_API_READ_ACCESS_TOKEN');

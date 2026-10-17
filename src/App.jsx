@@ -37,10 +37,10 @@ function AuthProvider({ children }) {
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 }
 
-const genres = ['Animation', 'Adventure', 'Fantasy', 'Sci-Fi', 'Comedy', 'Drama'];
+const genres = ['Adventure', 'Comedy', 'Drama', 'Thriller', 'Mystery', 'Horror', 'Romance', 'Crime'];
 const titleSlug = (title) => title.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '');
 const FreeMoviesContext = createContext({ movies: [], loading: false, error: '', loaded: false, retry: () => {} });
-const freeMoviesCacheKey = 'screenhub-free-movies-v1';
+const freeMoviesCacheKey = 'screenhub-free-movies-v2';
 const freeMoviesCacheDuration = 12 * 60 * 60 * 1000;
 const openFilmLicenses = new Set([
   'https://creativecommons.org/licenses/by/3.0/',
@@ -59,7 +59,8 @@ function isValidFreeMovie(movie) {
     movie.embed_url === `https://archive.org/embed/${encodeURIComponent(movie.identifier)}` &&
     openFilmLicenses.has(movie.license_url) &&
     typeof movie.license_name === 'string' &&
-    movie.creator === 'Blender Foundation' &&
+    typeof movie.creator === 'string' &&
+    movie.creator.length > 0 &&
     typeof movie.genre === 'string' &&
     Array.isArray(movie.genres) &&
     movie.genres.every((genre) => typeof genre === 'string') &&
@@ -299,15 +300,15 @@ function PosterCard({ item, watchlist = [], toggleWatchlist }) {
   const [imageFailed, setImageFailed] = useState(false);
   const posterPath = imageFailed ? null : item.posterPath;
   const saved = watchlist.includes(item.title);
-  return <article className="poster-card"><Link className={`poster-art art-${item.mood || 'default'} ${posterPath ? 'has-poster' : ''}`} to={`/title/${titleSlug(item.title)}`} aria-label={`Watch ${item.title}`}><span className="art-kicker">{item.licenseName?.startsWith('Creative Commons Public Domain') ? 'PUBLIC DOMAIN' : 'CC LICENSED'}</span>{posterPath && <img className="poster-image" src={posterPath} alt={`${item.title} poster`} loading="lazy" decoding="async" onError={() => setImageFailed(true)} />}<strong>{item.title}</strong><span className="art-genre">{item.genre}</span><span className="art-glow" /></Link><div className="poster-info"><Link to={`/title/${titleSlug(item.title)}`} className="poster-title">{item.title}</Link><span>{item.year} <i>·</i> {item.runtime} · Free</span></div>{toggleWatchlist && <button type="button" className={`save-title ${saved ? 'saved' : ''}`} aria-label={saved ? `Remove ${item.title} from My list` : `Add ${item.title} to My list`} onClick={() => toggleWatchlist(item.title)}>{saved ? '✓' : '+'}</button>}</article>;
+  return <article className="poster-card"><Link className={`poster-art art-${item.mood || 'default'} ${posterPath ? 'has-poster' : ''}`} to={`/title/${titleSlug(item.title)}`} aria-label={`Watch ${item.title}`}><span className="art-kicker">{item.licenseName?.startsWith('Public Domain Mark') ? 'ARCHIVE: PUBLIC DOMAIN MARK' : 'OPEN LICENSE'}</span>{posterPath && <img className="poster-image" src={posterPath} alt={`${item.title} poster`} loading="lazy" decoding="async" onError={() => setImageFailed(true)} />}<strong>{item.title}</strong><span className="art-genre">{item.genre}</span><span className="art-glow" /></Link><div className="poster-info"><Link to={`/title/${titleSlug(item.title)}`} className="poster-title">{item.title}</Link><span>{item.year} <i>·</i> {item.runtime} · Free</span></div>{toggleWatchlist && <button type="button" className={`save-title ${saved ? 'saved' : ''}`} aria-label={saved ? `Remove ${item.title} from My list` : `Add ${item.title} to My list`} onClick={() => toggleWatchlist(item.title)}>{saved ? '✓' : '+'}</button>}</article>;
 }
 
 function PosterServiceNotice() {
   const { movies, loading, error, loaded, retry } = useContext(FreeMoviesContext);
-  if (error) return <div className="poster-service-notice error" role="alert"><span>Free movies could not load: {error}</span><button type="button" onClick={retry}>Retry</button></div>;
-  if (loading) return <div className="poster-service-notice" role="status">Verifying free-to-watch movies…</div>;
-  if (movies.length) return <div className="poster-service-notice success" role="status">{movies.length} verified free movies · full films play here</div>;
-  if (loaded) return <div className="poster-service-notice" role="status">No free movies are available right now. Please try again.</div>;
+  if (error) return <div className="poster-service-notice error" role="alert"><span>Classic films could not load: {error}</span><button type="button" onClick={retry}>Retry</button></div>;
+  if (loading) return <div className="poster-service-notice" role="status">Checking Archive rights labels and full-video availability…</div>;
+  if (movies.length) return <div className="poster-service-notice success" role="status">{movies.length} classic features available from Internet Archive · copyright status may vary by country</div>;
+  if (loaded) return <div className="poster-service-notice" role="status">No classic films are available right now. Please try again.</div>;
   return null;
 }
 
@@ -318,7 +319,7 @@ function MovieRow({ title, items, watchlist, toggleWatchlist, link = '/browse' }
 function TrendingHero({ movies, loading, error, watchlist, toggleWatchlist }) {
   const [activeIndex, setActiveIndex] = useState(0);
   const [touchStartX, setTouchStartX] = useState(null);
-  if (!movies.length) return <section className="featured-hero trending-hero-empty" aria-live="polite"><div className="hero-grain" /><div className="hero-copy"><div className="eyebrow">FREE FULL MOVIES</div><h1>{loading ? 'Verifying free films…' : 'Free movies are unavailable'}</h1><p>{error || 'No free full movies are verified right now. Please try again shortly.'}</p></div></section>;
+  if (!movies.length) return <section className="featured-hero trending-hero-empty" aria-live="polite"><div className="hero-grain" /><div className="hero-copy"><div className="eyebrow">CLASSIC FULL-LENGTH FILMS</div><h1>{loading ? 'Checking full-feature films…' : 'Classic films are unavailable'}</h1><p>{error || 'No classic features are currently available from the source. Please try again shortly.'}</p></div></section>;
   const slideIndex = activeIndex % movies.length;
   const featured = movies[slideIndex];
   const heroBackdrop = featured.backdropPath || featured.posterPath;
@@ -329,10 +330,10 @@ function TrendingHero({ movies, loading, error, watchlist, toggleWatchlist }) {
     if (Math.abs(distance) > 45) moveSlide(distance < 0 ? 1 : -1);
     setTouchStartX(null);
   };
-  return <section className={`featured-hero trending-hero feature-${featured.genre.toLowerCase().replace(/[^a-z0-9]+/g, '-')}`} onTouchStart={(event) => setTouchStartX(event.changedTouches[0].clientX)} onTouchEnd={endSwipe} aria-roledescription="carousel" aria-label="Free full movies">
+  return <section className={`featured-hero trending-hero feature-${featured.genre.toLowerCase().replace(/[^a-z0-9]+/g, '-')}`} onTouchStart={(event) => setTouchStartX(event.changedTouches[0].clientX)} onTouchEnd={endSwipe} aria-roledescription="carousel" aria-label="Classic full-length films">
     {heroBackdrop && <img className="feature-backdrop" src={heroBackdrop} alt="" aria-hidden="true" />}
     <div className="hero-grain" />
-    <div className="hero-copy" aria-live="polite"><div className="eyebrow"><span className="live-dot" /> FREE FULL MOVIES</div><div className="hero-label">OPEN MOVIE · {slideIndex + 1} OF {movies.length}</div><h1>{featured.title}</h1><p>{featured.description}</p><div className="hero-meta"><span className="rating-pill">FREE</span><span>{featured.year}</span><span>{featured.runtime}</span></div><div className="hero-actions"><Link className="primary-btn hero-btn" to={`/title/${titleSlug(featured.title)}`}>Watch full movie <span>→</span></Link><button className="quiet-btn" onClick={() => toggleWatchlist(featured.title)}>{watchlist.includes(featured.title) ? '✓ In my list' : '+ Add to my list'}</button></div></div>
+    <div className="hero-copy" aria-live="polite"><div className="eyebrow"><span className="live-dot" /> CLASSIC FULL-LENGTH FILMS</div><div className="hero-label">ARCHIVE LISTING · {slideIndex + 1} OF {movies.length}</div><h1>{featured.title}</h1><p>{featured.description}</p><div className="hero-meta"><span className="rating-pill">FREE</span><span>{featured.year}</span><span>{featured.runtime}</span></div><div className="hero-actions"><Link className="primary-btn hero-btn" to={`/title/${titleSlug(featured.title)}`}>Watch full movie <span>→</span></Link><button className="quiet-btn" onClick={() => toggleWatchlist(featured.title)}>{watchlist.includes(featured.title) ? '✓ In my list' : '+ Add to my list'}</button></div></div>
     <div className="hero-carousel-controls"><button type="button" onClick={() => moveSlide(-1)} aria-label="Previous free movie">←</button><div className="hero-carousel-dots">{movies.map((movie, index) => <button type="button" key={movie.id} className={index === slideIndex ? 'selected' : ''} onClick={() => setActiveIndex(index)} aria-label={`Show free movie ${index + 1}: ${movie.title}`} aria-current={index === slideIndex ? 'true' : undefined} />)}</div><button type="button" onClick={() => moveSlide(1)} aria-label="Next free movie">→</button></div>
   </section>;
 }
@@ -341,7 +342,7 @@ function Home({ watchlist, toggleWatchlist }) {
   const { movies, loading, error } = useContext(FreeMoviesContext);
   const usedGenreArtwork = new Set();
   return <><Header /><PosterServiceNotice /><main className="home-page"><TrendingHero movies={movies} loading={loading} error={error} watchlist={watchlist} toggleWatchlist={toggleWatchlist} />
-    <div className="home-intro"><div><div className="eyebrow">OPEN FILMS · FREE TO WATCH</div><h2>Find your <em>kind</em> of story.</h2></div><Link className="all-genres-link" to="/browse">Browse free movies <span>→</span></Link></div><div className="genre-shortcuts">{genres.slice(0, 6).map((genre, index) => {
+    <div className="home-intro"><div><div className="eyebrow">CLASSIC FEATURES · FREE TO WATCH</div><h2>Find your <em>kind</em> of story.</h2></div><Link className="all-genres-link" to="/browse">Browse classic films <span>→</span></Link></div><div className="genre-shortcuts">{genres.slice(0, 6).map((genre, index) => {
       const candidates = movies.filter((movie) => movie.genres.includes(genre)).sort((a, b) => Number(b.genre === genre) - Number(a.genre === genre));
       const genreMovie = candidates.find((movie) => !usedGenreArtwork.has(movie.backdropPath || movie.posterPath)) || candidates[0];
       const image = genreMovie && (genreMovie.backdropPath || genreMovie.posterPath);
@@ -349,7 +350,7 @@ function Home({ watchlist, toggleWatchlist }) {
       const style = image ? { '--genre-image': `url("${image}")` } : undefined;
       return <Link key={genre} className={`genre-tile genre-tile-${index}`} style={style} to={`/genre/${encodeURIComponent(genre.toLowerCase())}`}><span>0{index + 1}</span><strong>{genre}</strong><i>↗</i></Link>;
     })}</div>
-    <MovieRow title="Free full films" items={movies} watchlist={watchlist} toggleWatchlist={toggleWatchlist} /><Footer /></main></>;
+    <MovieRow title="Classic full-length movies" items={movies} watchlist={watchlist} toggleWatchlist={toggleWatchlist} /><Footer /></main></>;
 }
 
 function PageShell({ eyebrow, title, description, children }) { return <><Header /><PosterServiceNotice /><main className="browse-page"><div className="page-heading"><div className="eyebrow">{eyebrow}</div><h1>{title}</h1><p>{description}</p></div>{children}<Footer /></main></>; }
@@ -383,7 +384,7 @@ function GenrePage({ watchlist, toggleWatchlist }) {
 
 function SearchPage({ watchlist, toggleWatchlist }) {
   const { movies } = useContext(FreeMoviesContext); const [params, setParams] = useSearchParams(); const query = params.get('q') || ''; const matches = movies.filter((item) => `${item.title} ${item.genres.join(' ')} ${item.description}`.toLowerCase().includes(query.trim().toLowerCase()));
-  return <PageShell eyebrow="SEARCH THE COLLECTION" title={query ? <>Results for <em>“{query}”</em></> : <>What are you <em>in the mood for?</em></>} description={query ? `${matches.length} ${matches.length === 1 ? 'story' : 'stories'} found in the ScreenHub collection.` : 'Search for a title, genre, or feeling.'}><form className="large-search" onSubmit={(event) => event.preventDefault()}><span>⌕</span><input autoFocus aria-label="Search the collection" placeholder="Try “space”, “animation”, or a title..." value={query} onChange={(event) => setParams(event.target.value ? { q: event.target.value } : {})} /><button type="button" onClick={() => setParams({})}>Clear</button></form>{query && <section className="result-grid">{matches.length ? matches.map((item) => <PosterCard key={item.title} item={item} watchlist={watchlist} toggleWatchlist={toggleWatchlist} />) : <p className="empty-state">No titles match that search yet. Try a genre, like “Sci-Fi” or “Horror”.</p>}</section>}{!query && <div className="search-genres"><span>POPULAR GENRES</span>{genres.slice(0, 6).map((genre) => <Link key={genre} to={`/genre/${genre.toLowerCase()}`}>{genre} <b>↗</b></Link>)}</div>}</PageShell>;
+  return <PageShell eyebrow="SEARCH THE COLLECTION" title={query ? <>Results for <em>“{query}”</em></> : <>What are you <em>in the mood for?</em></>} description={query ? `${matches.length} ${matches.length === 1 ? 'story' : 'stories'} found in the ScreenHub collection.` : 'Search for a title, genre, or feeling.'}><form className="large-search" onSubmit={(event) => event.preventDefault()}><span>⌕</span><input autoFocus aria-label="Search the collection" placeholder="Try “mystery”, “horror”, or a title..." value={query} onChange={(event) => setParams(event.target.value ? { q: event.target.value } : {})} /><button type="button" onClick={() => setParams({})}>Clear</button></form>{query && <section className="result-grid">{matches.length ? matches.map((item) => <PosterCard key={item.title} item={item} watchlist={watchlist} toggleWatchlist={toggleWatchlist} />) : <p className="empty-state">No titles match that search yet. Try a genre, like “Thriller” or “Horror”.</p>}</section>}{!query && <div className="search-genres"><span>POPULAR GENRES</span>{genres.slice(0, 6).map((genre) => <Link key={genre} to={`/genre/${genre.toLowerCase()}`}>{genre} <b>↗</b></Link>)}</div>}</PageShell>;
 }
 
 function WatchlistPage({ watchlist, toggleWatchlist }) {
@@ -394,22 +395,22 @@ function WatchlistPage({ watchlist, toggleWatchlist }) {
 
 function TitlePage({ watchlist, toggleWatchlist }) {
   const { slug = '' } = useParams(); const { movies, loading, error } = useContext(FreeMoviesContext); const item = movies.find((entry) => titleSlug(entry.title) === slug); const saved = item && watchlist.includes(item.title); const [imageFailed, setImageFailed] = useState(false); const posterPath = item && !imageFailed && item.posterPath;
-  if (!item && loading) return <PageShell eyebrow="FREE OPEN FILMS" title="Checking the catalog…" description="Verifying the film license and playable video before opening this title." />;
-  if (!item) return <PageShell eyebrow="FREE OPEN FILMS" title="Movie not found." description={error || 'That title is not in our verified free-to-watch catalog.'}><Link to="/browse">Explore free movies →</Link></PageShell>;
-  return <><Header /><main className="title-page"><Link to="/browse" className="back-link detail-back">← Back to free movies</Link><section className="title-detail-hero"><div className={`detail-poster art-${item.mood || 'default'} ${posterPath ? 'has-poster' : ''}`}>{posterPath && <img src={posterPath} alt={`${item.title} poster`} onError={() => setImageFailed(true)} />}<span>{item.title}</span></div><div className="title-copy"><div className="eyebrow">FREE · FULL MOVIE</div><h1>{item.title}</h1><div className="detail-tags"><span>{item.year}</span><span>{item.genre}</span><span>{item.runtime}</span><span className="rating-pill">FREE TO WATCH</span></div><p>{item.description}</p><div className="hero-actions"><button className="primary-btn" type="button" onClick={() => document.getElementById('free-movie-player')?.scrollIntoView({ behavior: 'smooth', block: 'center' })}>▶ Watch full movie</button><button className="quiet-btn" onClick={() => toggleWatchlist(item.title)}>{saved ? '✓ Saved to my list' : '+ Add to my list'}</button></div></div></section><FreeMoviePlayer movie={item} /><section className="title-details"><div><span>FILM DETAILS</span><h2>{item.title}</h2><p>{item.description}</p><p>Created by {item.creator}. Released under {item.licenseName}.</p></div><a className="detail-genre" href={item.licenseUrl} target="_blank" rel="noreferrer">View the film license <b>{item.licenseName} ↗</b></a></section><MovieRow title="More free open movies" items={movies.filter((other) => other.id !== item.id)} watchlist={watchlist} toggleWatchlist={toggleWatchlist} /><Footer /></main></>;
+  if (!item && loading) return <PageShell eyebrow="CLASSIC FEATURES" title="Checking the catalog…" description="Checking the Archive listing and full-video availability." />;
+  if (!item) return <PageShell eyebrow="CLASSIC FEATURES" title="Movie not found." description={error || 'That title is not currently available from the Archive source.'}><Link to="/browse">Explore classic films →</Link></PageShell>;
+  return <><Header /><main className="title-page"><Link to="/browse" className="back-link detail-back">← Back to classic films</Link><section className="title-detail-hero"><div className={`detail-poster art-${item.mood || 'default'} ${posterPath ? 'has-poster' : ''}`}>{posterPath && <img src={posterPath} alt={`${item.title} poster`} onError={() => setImageFailed(true)} />}<span>{item.title}</span></div><div className="title-copy"><div className="eyebrow">CLASSIC · FULL MOVIE</div><h1>{item.title}</h1><div className="detail-tags"><span>{item.year}</span><span>{item.genre}</span><span>{item.runtime}</span><span className="rating-pill">FREE TO WATCH</span></div><p>{item.description}</p><div className="hero-actions"><button className="primary-btn" type="button" onClick={() => document.getElementById('free-movie-player')?.scrollIntoView({ behavior: 'smooth', block: 'center' })}>▶ Watch full movie</button><button className="quiet-btn" onClick={() => toggleWatchlist(item.title)}>{saved ? '✓ Saved to my list' : '+ Add to my list'}</button></div></div></section><FreeMoviePlayer movie={item} /><section className="title-details"><div><span>FILM DETAILS</span><h2>{item.title}</h2><p>{item.description}</p><p>Director: {item.creator}. Internet Archive displays a Public Domain Mark for this item; this is a source label, not proof of public-domain status in every country.</p></div><a className="detail-genre" href={item.licenseUrl} target="_blank" rel="noreferrer">About the Public Domain Mark <b>↗</b></a></section><MovieRow title="More classic full-length movies" items={movies.filter((other) => other.id !== item.id)} watchlist={watchlist} toggleWatchlist={toggleWatchlist} /><Footer /></main></>;
 }
 
 function FreeMoviePlayer({ movie }) {
   const [playing, setPlaying] = useState(false);
   return <section className="movie-viewing-options free-movie-player-section" id="free-movie-player" aria-labelledby="free-movie-heading">
-    <div className="viewing-options-copy"><div className="eyebrow">FREE FULL MOVIE · LICENSE VERIFIED</div><h2 id="free-movie-heading">Watch {movie.title}</h2><p>This complete film is free to watch from Internet Archive. Playback is provided by the source; ScreenHub does not host the video.</p></div>
+    <div className="viewing-options-copy"><div className="eyebrow">CLASSIC FEATURE · INTERNET ARCHIVE SOURCE</div><h2 id="free-movie-heading">Watch {movie.title}</h2><p>Internet Archive currently lists this item with a Public Domain Mark. That label is not a legal determination, and copyright status can vary by country. Playback is provided by the source; ScreenHub does not host the video.</p></div>
     <div className="viewing-actions"><button className="primary-btn" type="button" onClick={() => setPlaying((current) => !current)}>{playing ? 'Close player' : '▶ Play full movie'}</button><a className="quiet-btn" href={`https://archive.org/details/${encodeURIComponent(movie.archiveId)}`} target="_blank" rel="noreferrer">Open source ↗</a></div>
     {playing && <div className="archive-player"><iframe src={`${movie.embedUrl}?autoplay=1`} title={`Play the complete movie ${movie.title}`} allow="autoplay; fullscreen; picture-in-picture" allowFullScreen referrerPolicy="strict-origin-when-cross-origin" /></div>}
-    <p className="license-disclaimer">“{movie.title}” by {movie.creator} · <a href={movie.licenseUrl} target="_blank" rel="noreferrer">{movie.licenseName}</a> · <a href={`https://archive.org/details/${encodeURIComponent(movie.archiveId)}`} target="_blank" rel="noreferrer">Source and license details</a>.</p>
+    <p className="license-disclaimer">“{movie.title}” directed by {movie.creator}. <a href={movie.licenseUrl} target="_blank" rel="noreferrer">About the Public Domain Mark</a> · <a href={`https://archive.org/details/${encodeURIComponent(movie.archiveId)}`} target="_blank" rel="noreferrer">View source record</a>.</p>
   </section>;
 }
 
-function Footer() { return <><div className="source-attribution"><a href="https://archive.org/details/open_source_movies" target="_blank" rel="noreferrer" aria-label="Visit Internet Archive">OPEN FILMS</a><p>Free-to-watch films are served by Internet Archive and shown under their listed public-domain or Creative Commons licenses. Credits and license links appear with each film.</p></div><footer className="site-footer"><Link className="wordmark" to="/home">SCREEN<span>HUB</span></Link><span>Good stories bring us together.</span><Link to="/profile">Your account ↗</Link></footer></>; }
+function Footer() { return <><div className="source-attribution"><a href="https://archive.org/" target="_blank" rel="noreferrer" aria-label="Visit Internet Archive">INTERNET ARCHIVE</a><p>Films are embedded from Internet Archive. Its Public Domain Mark is an informational label, not a legal guarantee; copyright and availability can vary by country. Check the source record and local rules.</p></div><footer className="site-footer"><Link className="wordmark" to="/home">SCREEN<span>HUB</span></Link><span>Good stories bring us together.</span><Link to="/profile">Your account ↗</Link></footer></>; }
 
 function Profile() {
   const { profile, session, setProfile } = useAuth(); const navigate = useNavigate(); const [username, setUsername] = useState(profile?.username ?? ''); const [avatar, setAvatar] = useState(profile?.avatar ?? ''); const [characterQuery, setCharacterQuery] = useState(''); const [characters, setCharacters] = useState([]); const [searching, setSearching] = useState(false); const [searchError, setSearchError] = useState(''); const [password, setPassword] = useState(''); const [notice, setNotice] = useState(''); const [error, setError] = useState(''); const [busy, setBusy] = useState(false);

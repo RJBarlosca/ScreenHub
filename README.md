@@ -14,9 +14,9 @@ For email confirmation and password reset links, add your local Vite address (us
 
 ## Free full movies
 
-ScreenHub lists free-to-watch open films from the Blender Foundation. This initial collection is primarily complete animated short films (about 3–15 minutes), not feature-length studio movies. The Supabase `tmdb-posters` Edge Function verifies each Internet Archive item before displaying it: the creator must match, its recorded license must match the curated catalog entry, and a playable MP4 file must be present. Movie pages play the complete film through Internet Archive's embedded player; ScreenHub does not host the video files.
+ScreenHub's classic-film collection currently includes feature-length titles such as *The General*, *D.O.A.*, *The Little Shop of Horrors*, *The Killer Shrews*, and *The Brain That Wouldn't Die*. The Supabase `tmdb-posters` Edge Function checks each curated Internet Archive record for its expected title, displayed rights label, and a playable MP4 before showing it. Movie pages embed the full film from Internet Archive; ScreenHub does not host the video files.
 
-The open-film catalog uses public-domain or Creative Commons licensed works. Each film page credits the creator and links to its license and source item. To deploy the catalog function, run `npx supabase functions deploy tmdb-posters --project-ref YOUR_PROJECT_REF` from this folder. Free movie catalog records are cached in the browser for up to 12 hours.
+Internet Archive's Public Domain Mark is an informational label, not a legal determination or guarantee. Copyright status and playback availability can differ by country, and a source listing alone does not establish worldwide clearance. Each film page links to the Archive item and explains this limitation. To deploy the catalog function, run `npx supabase functions deploy tmdb-posters --project-ref YOUR_PROJECT_REF` from this folder. Catalog records are cached in the browser for up to 12 hours.
 
 ## Existing accounts
 
