@@ -27,4 +27,4 @@ The app displays TMDB's logo and required attribution in its footer. Review [TMD
 
 Passwords from the former MySQL database cannot be copied into Supabase Auth as working accounts; existing users need to register again or use a separately planned account migration.
 
-Profile avatar images are served from `public/`. Movie metadata remains sample frontend data; TMDB is used to resolve poster artwork and does not populate the full catalog.
+Profile avatar images are served from `public/`. The browsable catalog contains sample frontend movie metadata with a broader selection of titles; TMDB resolves poster artwork and does not populate the catalog or provide streaming.

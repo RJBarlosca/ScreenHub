@@ -58,6 +58,32 @@ const media = [
   { title: 'Scream', genre: 'Thriller', year: 1996, rating: '7.4', runtime: '1h 51m', mood: 'scream', description: 'A masked killer turns the rules of horror movies into a deadly game.' },
   { title: 'The Secret Life of Walter Mitty', genre: 'Adventure', year: 2013, rating: '7.3', runtime: '1h 54m', mood: 'mitty', description: 'A quiet daydreamer takes the leap into a real-world adventure across the globe.' },
   { title: 'Inside Out 2', genre: 'Animation', year: 2024, rating: '7.5', runtime: '1h 36m', mood: 'insideout', description: 'New emotions arrive just as Riley begins a new chapter of growing up.' },
+  { title: 'Inception', genre: 'Sci-Fi', year: 2010, rating: '8.8', runtime: '2h 28m', mood: 'interstellar', description: 'A skilled thief enters people’s dreams to steal secrets and faces an impossible final job.' },
+  { title: 'The Matrix', genre: 'Sci-Fi', year: 1999, rating: '8.7', runtime: '2h 16m', mood: 'batman', description: 'A computer hacker discovers the hidden truth behind the world he knows.' },
+  { title: 'Arrival', genre: 'Sci-Fi', year: 2016, rating: '7.9', runtime: '1h 56m', mood: 'interstellar', description: 'A linguist works to communicate with visitors from beyond Earth before fear takes over.' },
+  { title: 'Blade Runner 2049', genre: 'Sci-Fi', year: 2017, rating: '8.0', runtime: '2h 44m', mood: 'interstellar', description: 'A new blade runner uncovers a secret that could reshape the future of humanity.' },
+  { title: 'Everything Everywhere All at Once', genre: 'Adventure', year: 2022, rating: '7.8', runtime: '2h 19m', mood: 'spiderverse', description: 'An overwhelmed laundromat owner discovers she may be the key to saving the multiverse.' },
+  { title: 'Barbie', genre: 'Comedy', year: 2023, rating: '6.8', runtime: '1h 54m', mood: 'wicked', description: 'Barbie leaves her familiar world on a journey of self-discovery in the real world.' },
+  { title: 'Get Out', genre: 'Horror', year: 2017, rating: '7.8', runtime: '1h 44m', mood: 'shining', description: 'A weekend visit with his girlfriend’s family becomes a deeply unsettling mystery.' },
+  { title: 'Hereditary', genre: 'Horror', year: 2018, rating: '7.3', runtime: '2h 7m', mood: 'conjuring', description: 'A family confronts disturbing secrets and an increasingly frightening legacy.' },
+  { title: 'A Quiet Place', genre: 'Horror', year: 2018, rating: '7.5', runtime: '1h 30m', mood: 'shining', description: 'A family must live in silence to survive in a world hunted by sound-sensitive creatures.' },
+  { title: 'Knives Out', genre: 'Comedy', year: 2019, rating: '7.9', runtime: '2h 10m', mood: 'budapest', description: 'A detective investigates a novelist’s death amid a family full of suspects.' },
+  { title: 'Parasite', genre: 'Drama', year: 2019, rating: '8.5', runtime: '2h 12m', mood: 'shining', description: 'Two families from very different worlds become entangled in an unexpected scheme.' },
+  { title: 'The Shawshank Redemption', genre: 'Drama', year: 1994, rating: '9.3', runtime: '2h 22m', mood: 'mitty', description: 'A banker sentenced to life in prison builds a lasting friendship and holds on to hope.' },
+  { title: 'Top Gun: Maverick', genre: 'Action', year: 2022, rating: '8.2', runtime: '2h 11m', mood: 'predator', description: 'A veteran Navy pilot returns to train a new generation for a dangerous mission.' },
+  { title: 'Mad Max: Fury Road', genre: 'Action', year: 2015, rating: '8.1', runtime: '2h', mood: 'martian', description: 'A lone wanderer joins a daring escape across a harsh and unforgiving wasteland.' },
+  { title: 'The Lord of the Rings: The Fellowship of the Ring', genre: 'Fantasy', year: 2001, rating: '8.9', runtime: '2h 58m', mood: 'wicked', description: 'A young hobbit begins a perilous journey to destroy a powerful ring.' },
+  { title: 'Harry Potter and the Sorcerer’s Stone', genre: 'Fantasy', year: 2001, rating: '7.7', runtime: '2h 32m', mood: 'wicked', description: 'A boy discovers he is a wizard and begins a new life at a school of magic.' },
+  { title: 'Coco', genre: 'Animation', year: 2017, rating: '8.4', runtime: '1h 45m', mood: 'insideout', description: 'A music-loving boy journeys to the Land of the Dead to uncover his family’s story.' },
+  { title: 'Finding Nemo', genre: 'Animation', year: 2003, rating: '8.2', runtime: '1h 40m', mood: 'insideout', description: 'A cautious clownfish crosses the ocean with an unlikely friend to find his son.' },
+  { title: 'Spirited Away', genre: 'Fantasy', year: 2001, rating: '8.6', runtime: '2h 5m', mood: 'wicked', description: 'A young girl enters a mysterious spirit world and searches for a way to free her parents.' },
+  { title: 'Pride & Prejudice', genre: 'Romance', year: 2005, rating: '7.8', runtime: '2h 9m', mood: 'lalaland', description: 'Elizabeth Bennet and Mr. Darcy challenge their first impressions of one another.' },
+  { title: 'The Notebook', genre: 'Romance', year: 2004, rating: '7.8', runtime: '2h 3m', mood: 'lalaland', description: 'A lifelong love story unfolds across years of separation and change.' },
+  { title: 'The Devil Wears Prada', genre: 'Comedy', year: 2006, rating: '7.0', runtime: '1h 49m', mood: 'budapest', description: 'A new assistant navigates the demanding world of a high-fashion magazine.' },
+  { title: 'The Truman Show', genre: 'Drama', year: 1998, rating: '8.2', runtime: '1h 43m', mood: 'interstellar', description: 'A man begins to suspect that the seemingly perfect world around him is staged.' },
+  { title: 'Jurassic Park', genre: 'Adventure', year: 1993, rating: '8.2', runtime: '2h 7m', mood: 'martian', description: 'A visit to a dinosaur theme park becomes a fight for survival when its systems fail.' },
+  { title: 'Gladiator', genre: 'Action', year: 2000, rating: '8.5', runtime: '2h 35m', mood: 'predator', description: 'A betrayed Roman general fights his way through the arena and seeks justice.' },
+  { title: 'The Social Network', genre: 'Drama', year: 2010, rating: '7.8', runtime: '2h', mood: 'batman', description: 'The creation of a social networking site brings ambition, friendship, and conflict together.' },
 ];
 const genres = ['Action', 'Adventure', 'Animation', 'Comedy', 'Drama', 'Fantasy', 'Horror', 'Romance', 'Sci-Fi', 'Thriller'];
 const titleSlug = (title) => title.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '');
@@ -65,6 +91,25 @@ const TmdbPostersContext = createContext({ posters: {}, loading: false, error: '
 const posterCacheKey = 'screenhub-tmdb-posters';
 const posterCacheDuration = 7 * 24 * 60 * 60 * 1000;
 let pendingPosterRequest;
+
+async function invokePosterLookup(titles) {
+  const batches = [];
+  for (let index = 0; index < titles.length; index += 25) batches.push(titles.slice(index, index + 25));
+  const responses = await Promise.all(batches.map(async (batch) => {
+    const { data, error } = await supabase.functions.invoke('tmdb-posters', { body: { titles: batch } });
+    if (error) {
+      const response = error.context;
+      if (response instanceof Response) {
+        const details = await response.clone().json().catch(() => null);
+        throw new Error(details?.error || `${error.message} (HTTP ${response.status})`);
+      }
+      throw error;
+    }
+    if (!data?.posters || typeof data.posters !== 'object') throw new Error('The TMDB poster service returned an invalid response.');
+    return data.posters;
+  }));
+  return Object.assign({}, ...responses);
+}
 
 function readPosterCache() {
   try {
@@ -96,20 +141,11 @@ function TmdbPostersProvider({ children }) {
     const load = async () => {
       try {
         if (!pendingPosterRequest) {
-          pendingPosterRequest = supabase.functions.invoke('tmdb-posters', { body: { titles: missing } })
+          pendingPosterRequest = invokePosterLookup(missing)
             .finally(() => { pendingPosterRequest = undefined; });
         }
-        const { data, error: functionError } = await pendingPosterRequest;
-        if (functionError) {
-          const response = functionError.context;
-          if (response instanceof Response) {
-            const details = await response.clone().json().catch(() => null);
-            throw new Error(details?.error || `${functionError.message} (HTTP ${response.status})`);
-          }
-          throw functionError;
-        }
-        if (!data?.posters || typeof data.posters !== 'object') throw new Error('The TMDB poster service returned an invalid response.');
-        const found = Object.fromEntries(Object.entries(data.posters).filter(([, path]) => typeof path === 'string' && path.startsWith('/')));
+        const result = await pendingPosterRequest;
+        const found = Object.fromEntries(Object.entries(result).filter(([, path]) => typeof path === 'string' && path.startsWith('/')));
         const merged = { ...posters, ...found };
         if (!active) return;
         setPosters(merged);
