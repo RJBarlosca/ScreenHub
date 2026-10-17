@@ -94,7 +94,7 @@ const tmdbGenreNames = {
 };
 const titleSlug = (title) => title.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '');
 const TmdbPostersContext = createContext({ movies: [], loading: false, error: '' });
-const posterCacheKey = 'screenhub-tmdb-movies-v4';
+const posterCacheKey = 'screenhub-tmdb-movies-v5';
 const posterCacheDuration = 7 * 24 * 60 * 60 * 1000;
 let pendingPosterRequest;
 
@@ -149,7 +149,7 @@ function TmdbPostersProvider({ children }) {
 
   useEffect(() => {
     if (!session?.user?.id || !supabase) return undefined;
-    const missing = media.filter((item) => !Object.hasOwn(tmdbMovies, item.title)).map(({ title, year }) => ({ title, year, featured: title === media[0].title }));
+    const missing = media.filter((item) => !Object.hasOwn(tmdbMovies, item.title)).map(({ title, year }) => ({ title, year, featured: media.findIndex((candidate) => candidate.title === title) < 8 }));
     if (!missing.length) { setLoaded(true); return undefined; }
     let active = true;
     setLoading(true);
@@ -388,7 +388,7 @@ function MovieRow({ title, items, watchlist, toggleWatchlist, link = '/browse' }
 
 function Home({ watchlist, toggleWatchlist }) {
   const { movies, loading, error } = useContext(TmdbPostersContext);
-  const featured = movies[0];
+  const featured = movies.find((movie) => movie.trailerKey) || movies[0];
   if (!featured) return <><Header /><PosterServiceNotice /><main className="home-page">{loading ? <p className="empty-state">Loading movies from TMDB…</p> : error ? <p className="empty-state">We couldn’t load TMDB movies. Use Retry above to try again.</p> : <p className="empty-state">No movies from TMDB are available in the catalog yet.</p>}<Footer /></main></>;
   const heroBackdrop = featured.backdropPath || featured.posterPath;
   return <><Header /><PosterServiceNotice /><main className="home-page"><section className={`featured-hero feature-${featured.genre.toLowerCase().replace(/[^a-z0-9]+/g, '-')}`}>
