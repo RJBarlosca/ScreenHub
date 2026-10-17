@@ -1,5 +1,5 @@
 import { createContext, useContext, useEffect, useMemo, useState } from 'react';
-import { Link, Navigate, Route, Routes, useLocation, useNavigate } from 'react-router-dom';
+import { Link, Navigate, Route, Routes, useLocation, useNavigate, useParams, useSearchParams } from 'react-router-dom';
 import { isSupabaseConfigured, supabase } from './lib/supabase.js';
 
 const AuthContext = createContext(null);
@@ -38,22 +38,29 @@ function AuthProvider({ children }) {
 }
 
 const media = [
-  { title: 'Toy Story 5', genre: 'Animation' },
-  { title: 'Captain America: Brave New World', genre: 'Action' },
-  { title: 'Thunderbolts*', genre: 'Action' },
-  { title: 'Ballerina', genre: 'Action' },
-  { title: 'Avengers: Doomsday', genre: 'Action' },
-  { title: 'The Conjuring: Last Rites', genre: 'Horror' },
-  { title: 'Smile 2', genre: 'Horror' },
-  { title: 'Scream 7', genre: 'Horror' },
-  { title: 'The Running Man', genre: 'Action' },
-  { title: 'Wicked', genre: 'Drama' },
-  { title: 'Sinister', genre: 'Horror' },
-  { title: 'It', genre: 'Horror' },
-  { title: 'John Wick', genre: 'Action' },
-  { title: 'Deliver Us from Evil', genre: 'Horror' },
-  { title: 'The Shining', genre: 'Horror' },
+  { title: 'Predator: Badlands', genre: 'Sci-Fi', year: 2025, rating: '7.3', runtime: '1h 47m', mood: 'predator', description: 'Cast out on a dangerous world, a young hunter finds an unlikely ally and fights to survive the ultimate proving ground.' },
+  { title: 'Dune: Part Two', genre: 'Adventure', year: 2024, rating: '8.5', runtime: '2h 46m', mood: 'dune', description: 'Paul Atreides unites with Chani and the Fremen on a journey of revenge and destiny across Arrakis.' },
+  { title: 'The Batman', genre: 'Action', year: 2022, rating: '7.8', runtime: '2h 56m', mood: 'batman', description: 'A relentless detective follows a trail of clues through Gotham’s darkest corners.' },
+  { title: 'Interstellar', genre: 'Sci-Fi', year: 2014, rating: '8.7', runtime: '2h 49m', mood: 'interstellar', description: 'A team of explorers travels beyond this galaxy to discover whether mankind has a future among the stars.' },
+  { title: 'John Wick', genre: 'Action', year: 2014, rating: '7.4', runtime: '1h 41m', mood: 'wick', description: 'A retired hitman returns to the underworld and becomes a legend in his own right.' },
+  { title: 'Wicked', genre: 'Fantasy', year: 2024, rating: '7.5', runtime: '2h 40m', mood: 'wicked', description: 'Two unlikely friends discover that their differences may change the future of Oz.' },
+  { title: 'The Shining', genre: 'Horror', year: 1980, rating: '8.4', runtime: '2h 26m', mood: 'shining', description: 'A winter at an isolated hotel takes a terrifying turn for a family of three.' },
+  { title: 'Spider-Man: Across the Spider-Verse', genre: 'Animation', year: 2023, rating: '8.6', runtime: '2h 20m', mood: 'spiderverse', description: 'Miles Morales swings across the multiverse and meets a team of Spider-People protecting its very existence.' },
+  { title: 'The Grand Budapest Hotel', genre: 'Comedy', year: 2014, rating: '8.1', runtime: '1h 39m', mood: 'budapest', description: 'A legendary concierge and his protégé become wrapped up in a glamorous European mystery.' },
+  { title: 'The Conjuring: Last Rites', genre: 'Horror', year: 2025, rating: '6.8', runtime: '2h 15m', mood: 'conjuring', description: 'The Warrens face one final case that brings the darkest parts of their past back to light.' },
+  { title: 'La La Land', genre: 'Romance', year: 2016, rating: '8.0', runtime: '2h 8m', mood: 'lalaland', description: 'A jazz musician and an aspiring actor fall in love while pursuing their dreams in Los Angeles.' },
+  { title: 'Oppenheimer', genre: 'Drama', year: 2023, rating: '8.3', runtime: '3h', mood: 'oppenheimer', description: 'A brilliant physicist faces the world-changing consequences of the secret project he helped create.' },
+  { title: 'Whiplash', genre: 'Drama', year: 2014, rating: '8.5', runtime: '1h 46m', mood: 'whiplash', description: 'An ambitious young drummer pushes himself to the limit under the eye of a demanding instructor.' },
+  { title: 'Captain America: Brave New World', genre: 'Action', year: 2025, rating: '5.7', runtime: '1h 58m', mood: 'captain', description: 'Sam Wilson steps into a new role and faces a conspiracy with global consequences.' },
+  { title: 'Toy Story 5', genre: 'Animation', year: 2026, rating: '—', runtime: 'Coming soon', mood: 'toystory', description: 'Woody, Buzz and the gang return for a brand-new adventure.' },
+  { title: 'Smile 2', genre: 'Horror', year: 2024, rating: '6.8', runtime: '2h 7m', mood: 'smile', description: 'A pop star’s world tour becomes a nightmare as an old terror follows her into the spotlight.' },
+  { title: 'The Martian', genre: 'Sci-Fi', year: 2015, rating: '8.0', runtime: '2h 24m', mood: 'martian', description: 'Stranded on Mars, one astronaut uses ingenuity and humor to make it home alive.' },
+  { title: 'Scream', genre: 'Thriller', year: 1996, rating: '7.4', runtime: '1h 51m', mood: 'scream', description: 'A masked killer turns the rules of horror movies into a deadly game.' },
+  { title: 'The Secret Life of Walter Mitty', genre: 'Adventure', year: 2013, rating: '7.3', runtime: '1h 54m', mood: 'mitty', description: 'A quiet daydreamer takes the leap into a real-world adventure across the globe.' },
+  { title: 'Inside Out 2', genre: 'Animation', year: 2024, rating: '7.5', runtime: '1h 36m', mood: 'insideout', description: 'New emotions arrive just as Riley begins a new chapter of growing up.' },
 ];
+const genres = ['Action', 'Adventure', 'Animation', 'Comedy', 'Drama', 'Fantasy', 'Horror', 'Romance', 'Sci-Fi', 'Thriller'];
+const titleSlug = (title) => title.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '');
 
 function SetupNotice() {
   if (isSupabaseConfigured) return null;
@@ -61,14 +68,23 @@ function SetupNotice() {
 }
 
 function App() {
+  const [watchlist, setWatchlist] = useState(() => JSON.parse(localStorage.getItem('screenhub-watchlist') || '[]'));
+  useEffect(() => localStorage.setItem('screenhub-watchlist', JSON.stringify(watchlist)), [watchlist]);
+  const toggleWatchlist = (title) => setWatchlist((current) => current.includes(title) ? current.filter((item) => item !== title) : [...current, title]);
+  const browseProps = { watchlist, toggleWatchlist };
   return <AuthProvider><SetupNotice /><Routes>
     <Route path="/" element={<SignIn />} />
     <Route path="/signup" element={<SignUp />} />
     <Route path="/forgot-password" element={<ForgotPassword />} />
     <Route path="/reset-password" element={<ResetPassword />} />
-    <Route path="/home" element={<Protected><Home /></Protected>} />
+    <Route path="/home" element={<Protected><Home {...browseProps} /></Protected>} />
+    <Route path="/browse" element={<Protected><Browse {...browseProps} /></Protected>} />
+    <Route path="/genre/:genre" element={<Protected><GenrePage {...browseProps} /></Protected>} />
+    <Route path="/search" element={<Protected><SearchPage {...browseProps} /></Protected>} />
+    <Route path="/watchlist" element={<Protected><WatchlistPage {...browseProps} /></Protected>} />
+    <Route path="/title/:slug" element={<Protected><TitlePage {...browseProps} /></Protected>} />
     <Route path="/profile" element={<Protected><Profile /></Protected>} />
-    <Route path="/series/squid-game" element={<Protected><Series /></Protected>} />
+    <Route path="/series/squid-game" element={<Protected><TitlePage {...browseProps} legacySquid /></Protected>} />
     <Route path="*" element={<Navigate to="/" replace />} />
   </Routes></AuthProvider>;
 }
@@ -169,7 +185,7 @@ function Field({ label, value, onChange, type = 'text', ...props }) {
   return <label className="field"><span>{label}</span><input type={type} value={value} onChange={(event) => onChange(event.target.value)} {...props} /></label>;
 }
 
-function Header() {
+function LegacyHeader() {
   const { profile } = useAuth(); const navigate = useNavigate(); const [menu, setMenu] = useState(false);
   async function signOut() { await supabase.auth.signOut(); navigate('/'); }
   const initials = `${profile?.first_name?.[0] ?? ''}${profile?.last_name?.[0] ?? ''}`.toUpperCase() || profile?.username?.[0]?.toUpperCase() || 'S';
@@ -178,7 +194,7 @@ function Header() {
 
 function PosterRow({ title, items }) { return <section className="catalog-section" id="catalog"><div className="section-heading"><h2>{title}</h2><span>Explore all</span></div><div className="poster-row">{items.map((item) => <Link className="poster-card" to={item.title === 'Squid Game' ? '/series/squid-game' : '/home'} key={item.title}><div className="poster-placeholder" aria-label={`${item.title} poster placeholder`}><span>{item.title}</span></div><span>{item.title}</span></Link>)}</div></section>; }
 
-function Home() {
+function LegacyHome() {
   const [query, setQuery] = useState(''); const [genre, setGenre] = useState('All');
   const filtered = media.filter((item) => item.title.toLowerCase().includes(query.toLowerCase()) && (genre === 'All' || item.genre === genre));
   const popular = [{ title: 'Squid Game', genre: 'Drama' }, ...media.slice(2, 9)];
@@ -188,6 +204,60 @@ function Home() {
     <PosterRow title="Popular series" items={popular} />
   </main></>;
 }
+
+function Header() {
+  const { profile } = useAuth(); const navigate = useNavigate(); const location = useLocation(); const [menu, setMenu] = useState(false); const [search, setSearch] = useState(new URLSearchParams(location.search).get('q') || '');
+  useEffect(() => setSearch(new URLSearchParams(location.search).get('q') || ''), [location.search]);
+  async function signOut() { await supabase.auth.signOut(); navigate('/'); }
+  function submitSearch(event) { event.preventDefault(); navigate(`/search?q=${encodeURIComponent(search.trim())}`); }
+  const initials = `${profile?.first_name?.[0] ?? ''}${profile?.last_name?.[0] ?? ''}`.toUpperCase() || profile?.username?.[0]?.toUpperCase() || 'S';
+  return <header className="site-header"><Link className="wordmark" to="/home">SCREEN<span>HUB</span></Link><nav className="main-nav"><Link className={location.pathname === '/home' ? 'active' : ''} to="/home">Home</Link><Link className={location.pathname === '/browse' ? 'active' : ''} to="/browse">Discover</Link><Link className={location.pathname === '/watchlist' ? 'active' : ''} to="/watchlist">My list</Link></nav><form className="header-search" onSubmit={submitSearch}><span>⌕</span><input aria-label="Search movies and series" value={search} onChange={(event) => setSearch(event.target.value)} placeholder="Titles, genres, moods..." /><kbd>↵</kbd></form><div className="header-user"><button className="avatar" onClick={() => setMenu(!menu)} aria-label="Open account menu">{initials}{profile?.avatar && <img src={profile.avatar} alt="" onError={(event) => { event.currentTarget.style.display = 'none'; }} />}</button>{menu && <div className="account-menu"><b>{[profile?.first_name, profile?.last_name].filter(Boolean).join(' ') || 'Your account'}</b><span>@{profile?.username}</span><Link to="/profile" onClick={() => setMenu(false)}>Edit profile</Link><button onClick={signOut}>Sign out</button></div>}</div></header>;
+}
+
+function PosterCard({ item, watchlist = [], toggleWatchlist }) {
+  const saved = watchlist.includes(item.title);
+  return <article className="poster-card"><Link className={`poster-art art-${item.mood || 'default'}`} to={`/title/${titleSlug(item.title)}`} aria-label={`View ${item.title}`}><span className="art-kicker">SCREENHUB ORIGINAL</span><strong>{item.title}</strong><span className="art-genre">{item.genre}</span><span className="art-glow" /></Link><div className="poster-info"><Link to={`/title/${titleSlug(item.title)}`} className="poster-title">{item.title}</Link><span>{item.year} <i>·</i> ★ {item.rating}</span></div>{toggleWatchlist && <button type="button" className={`save-title ${saved ? 'saved' : ''}`} aria-label={saved ? `Remove ${item.title} from My list` : `Add ${item.title} to My list`} onClick={() => toggleWatchlist(item.title)}>{saved ? '✓' : '+'}</button>}</article>;
+}
+
+function MovieRow({ title, items, watchlist, toggleWatchlist, link = '/browse' }) {
+  return <section className="catalog-section"><div className="section-heading"><h2>{title}</h2><Link to={link}>Explore all <span>→</span></Link></div><div className="poster-row">{items.map((item) => <PosterCard key={item.title} item={item} watchlist={watchlist} toggleWatchlist={toggleWatchlist} />)}</div></section>;
+}
+
+function Home({ watchlist, toggleWatchlist }) {
+  const featured = media[0];
+  return <><Header /><main className="home-page"><section className={`featured-hero feature-${featured.mood}`}><div className="hero-grain"/><div className="hero-copy"><div className="eyebrow"><span className="live-dot" /> THE STORY EVERYONE'S TALKING ABOUT</div><div className="hero-label">THIS WEEK’S PREMIERE</div><h1>Predator:<br /><em>Badlands</em></h1><p>{featured.description}</p><div className="hero-meta"><span className="rating-pill">★ {featured.rating}</span><span>{featured.year}</span><span>{featured.genre}</span><span>{featured.runtime}</span></div><div className="hero-actions"><Link className="primary-btn hero-btn" to={`/title/${titleSlug(featured.title)}`}>Discover film <span>→</span></Link><button className="quiet-btn" onClick={() => toggleWatchlist(featured.title)}>{watchlist.includes(featured.title) ? '✓ In my list' : '+ Add to my list'}</button></div></div><div className="hero-index"><span>01</span><i /> 04</div></section>
+    <div className="home-intro"><div><div className="eyebrow">CURATED FOR YOUR NEXT MOVIE NIGHT</div><h2>Find your <em>kind</em> of story.</h2></div><Link className="all-genres-link" to="/browse">Browse all genres <span>→</span></Link></div><div className="genre-shortcuts">{genres.slice(0, 6).map((genre, index) => <Link key={genre} className={`genre-tile genre-tile-${index}`} to={`/genre/${encodeURIComponent(genre.toLowerCase())}`}><span>0{index + 1}</span><strong>{genre}</strong><i>↗</i></Link>)}</div>
+    <MovieRow title="Popular this week" items={media.slice(0, 8)} watchlist={watchlist} toggleWatchlist={toggleWatchlist} /><MovieRow title="Made for the big screen" items={media.filter((item) => ['Adventure', 'Sci-Fi', 'Action'].includes(item.genre)).slice(0, 7)} watchlist={watchlist} toggleWatchlist={toggleWatchlist} /><MovieRow title="Stories after dark" items={media.filter((item) => ['Horror', 'Thriller'].includes(item.genre))} watchlist={watchlist} toggleWatchlist={toggleWatchlist} link="/genre/horror" /><Footer /></main></>;
+}
+
+function PageShell({ eyebrow, title, description, children }) { return <><Header /><main className="browse-page"><div className="page-heading"><div className="eyebrow">{eyebrow}</div><h1>{title}</h1><p>{description}</p></div>{children}<Footer /></main></>; }
+
+function Browse({ watchlist, toggleWatchlist }) {
+  return <PageShell eyebrow="THE SCREENHUB GUIDE" title={<>A world of stories.<br /><em>Pick your mood.</em></>} description="Explore every corner of the collection, from edge-of-your-seat thrillers to stories that stay with you."><section className="genre-directory"><div className="section-heading"><h2>Browse by genre</h2><span>{genres.length} collections</span></div><div className="genre-grid">{genres.map((genre, index) => { const count = media.filter((item) => item.genre === genre).length; return <Link key={genre} className={`genre-tile genre-tile-${index % 6}`} to={`/genre/${encodeURIComponent(genre.toLowerCase())}`}><span>COLLECTION 0{index + 1}</span><strong>{genre}</strong><small>{count} {count === 1 ? 'film' : 'films'} <b>→</b></small></Link>; })}</div></section><section className="catalog-section"><div className="section-heading"><h2>The complete collection</h2><span>{media.length} titles</span></div><div className="result-grid">{media.map((item) => <PosterCard key={item.title} item={item} watchlist={watchlist} toggleWatchlist={toggleWatchlist} />)}</div></section></PageShell>;
+}
+
+function GenrePage({ watchlist, toggleWatchlist }) {
+  const { genre = '' } = useParams(); const name = genres.find((item) => item.toLowerCase() === decodeURIComponent(genre).toLowerCase()); const items = media.filter((item) => item.genre.toLowerCase() === (name || genre).toLowerCase());
+  return <PageShell eyebrow="EXPLORE COLLECTION" title={<>{name || 'Genre'} <em>stories.</em></>} description={`A hand-picked collection of ${name || genre} films for your next movie night.`}><section className="result-grid">{items.length ? items.map((item) => <PosterCard key={item.title} item={item} watchlist={watchlist} toggleWatchlist={toggleWatchlist} />) : <p className="empty-state">This collection is coming soon. Explore all genres to find your next film.</p>}</section><Link className="back-to-browse" to="/browse">← All genres</Link></PageShell>;
+}
+
+function SearchPage({ watchlist, toggleWatchlist }) {
+  const [params, setParams] = useSearchParams(); const query = params.get('q') || ''; const matches = media.filter((item) => `${item.title} ${item.genre} ${item.description}`.toLowerCase().includes(query.trim().toLowerCase()));
+  return <PageShell eyebrow="SEARCH THE COLLECTION" title={query ? <>Results for <em>“{query}”</em></> : <>What are you <em>in the mood for?</em></>} description={query ? `${matches.length} ${matches.length === 1 ? 'story' : 'stories'} found in the ScreenHub collection.` : 'Search for a title, genre, or feeling.'}><form className="large-search" onSubmit={(event) => event.preventDefault()}><span>⌕</span><input autoFocus aria-label="Search the collection" placeholder="Try “space”, “animation”, or a title..." value={query} onChange={(event) => setParams(event.target.value ? { q: event.target.value } : {})} /><button type="button" onClick={() => setParams({})}>Clear</button></form>{query && <section className="result-grid">{matches.length ? matches.map((item) => <PosterCard key={item.title} item={item} watchlist={watchlist} toggleWatchlist={toggleWatchlist} />) : <p className="empty-state">No titles match that search yet. Try a genre, like “Sci-Fi” or “Horror”.</p>}</section>}{!query && <div className="search-genres"><span>POPULAR GENRES</span>{genres.slice(0, 6).map((genre) => <Link key={genre} to={`/genre/${genre.toLowerCase()}`}>{genre} <b>↗</b></Link>)}</div>}</PageShell>;
+}
+
+function WatchlistPage({ watchlist, toggleWatchlist }) {
+  const items = media.filter((item) => watchlist.includes(item.title));
+  return <PageShell eyebrow="SAVED FOR LATER" title={<>Your personal <em>collection.</em></>} description="Every good story you want to come back to, all in one place."><section className="result-grid">{items.length ? items.map((item) => <PosterCard key={item.title} item={item} watchlist={watchlist} toggleWatchlist={toggleWatchlist} />) : <div className="watchlist-empty"><span>＋</span><h2>Your list starts here.</h2><p>Save films as you explore and they’ll be waiting for you here.</p><Link className="primary-btn" to="/browse">Explore the collection</Link></div>}</section></PageShell>;
+}
+
+function TitlePage({ watchlist, toggleWatchlist, legacySquid = false }) {
+  const { slug = '' } = useParams(); const item = legacySquid ? { title: 'Squid Game', genre: 'Thriller', year: 2021, rating: '8.0', runtime: '1 season', mood: 'squid', description: 'Hundreds of cash-strapped players accept a strange invitation to compete in children’s games for a tempting prize. One by one, the stakes turn deadly.' } : media.find((entry) => titleSlug(entry.title) === slug); const saved = item && watchlist.includes(item.title);
+  if (!item) return <PageShell eyebrow="SCREENHUB" title="Story not found." description="That title isn’t in our collection yet."><Link to="/browse">Explore the collection →</Link></PageShell>;
+  return <><Header /><main className="title-page"><section className={`title-backdrop art-${item.mood}`}><div className="title-shade"/><div className="title-copy"><Link to="/browse" className="back-link">← Back to discover</Link><div className="eyebrow">SCREENHUB SPOTLIGHT</div><h1>{item.title}</h1><div className="hero-meta"><span className="rating-pill">★ {item.rating}</span><span>{item.year}</span><span>{item.genre}</span><span>{item.runtime}</span></div><p>{item.description}</p><div className="hero-actions"><a className="primary-btn" href={`https://www.youtube.com/results?search_query=${encodeURIComponent(`${item.title} official trailer`)}`} target="_blank" rel="noreferrer">▶ Watch trailer</a><button className="quiet-btn" onClick={() => toggleWatchlist(item.title)}>{saved ? '✓ In my list' : '+ Add to my list'}</button></div></div></section><section className="title-details"><div><span>ABOUT THIS TITLE</span><h2>A story worth settling in for.</h2><p>{item.description}</p></div><Link className="detail-genre" to={`/genre/${item.genre.toLowerCase()}`}>Explore more <b>{item.genre} →</b></Link></section><MovieRow title="You may also like" items={media.filter((other) => other.title !== item.title && other.genre === item.genre).slice(0, 6)} watchlist={watchlist} toggleWatchlist={toggleWatchlist} /></main><Footer /></>;
+}
+
+function Footer() { return <footer className="site-footer"><Link className="wordmark" to="/home">SCREEN<span>HUB</span></Link><span>Good stories bring us together.</span><Link to="/profile">Your account ↗</Link></footer>; }
 
 function Profile() {
   const { profile, session, setProfile } = useAuth(); const navigate = useNavigate(); const [username, setUsername] = useState(profile?.username ?? ''); const [avatar, setAvatar] = useState(profile?.avatar ?? ''); const [characterQuery, setCharacterQuery] = useState(''); const [characters, setCharacters] = useState([]); const [searching, setSearching] = useState(false); const [searchError, setSearchError] = useState(''); const [password, setPassword] = useState(''); const [notice, setNotice] = useState(''); const [error, setError] = useState(''); const [busy, setBusy] = useState(false);
