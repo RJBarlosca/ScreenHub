@@ -21,7 +21,7 @@ ScreenHub verifies its curated movie titles against TMDB before displaying them 
 3. From this project folder, deploy the proxy with `npx supabase functions deploy tmdb-posters --project-ref YOUR_PROJECT_REF`. The deployed function uses Supabase JWT verification and calls TMDB without exposing the token to the browser.
 4. Sign in to ScreenHub. Successfully resolved TMDB movie records are cached in the browser for up to 7 days.
 
-The app includes a text link to TMDB and its required attribution in the footer. Review [TMDB's API terms](https://www.themoviedb.org/api-terms-of-use) before use; commercial use requires a separate written agreement with TMDB.
+Movie pages can play official trailers and show legal streaming, rental, or purchase availability for the Philippines through TMDB's watch-provider data. ScreenHub does not host or stream full movies; viewers continue to the listed availability page. The app includes a text link to TMDB and its required attribution in the footer. Review [TMDB's API terms](https://www.themoviedb.org/api-terms-of-use) before use; commercial use requires a separate written agreement with TMDB.
 
 ## Existing accounts
 

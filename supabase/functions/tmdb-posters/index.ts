@@ -20,6 +20,7 @@ type MovieSearchResult = {
 };
 type MovieVideo = { key: string; site: string; type: string; official: boolean; published_at?: string };
 type TrendingRequest = { action?: string; titles?: unknown };
+type WatchOptionsRequest = TrendingRequest & { movie_id?: unknown; country?: unknown };
 
 function jsonResponse(body: unknown, status = 200) {
   return new Response(JSON.stringify(body), { status, headers: corsHeaders });
@@ -36,7 +37,7 @@ Deno.serve(async (request) => {
   const token = Deno.env.get('TMDB_API_READ_ACCESS_TOKEN');
   if (!token) return jsonResponse({ error: 'TMDB_API_READ_ACCESS_TOKEN is not configured for this Edge Function.' }, 500);
 
-  let payload: TrendingRequest;
+  let payload: WatchOptionsRequest;
   try {
     payload = await request.json();
   } catch {
@@ -88,7 +89,7 @@ Deno.serve(async (request) => {
           const videoData = await videoResponse.json();
           const videos: MovieVideo[] = Array.isArray(videoData.results) ? videoData.results : [];
           const trailer = videos
-            .filter((video) => video.site === 'YouTube' && ['Trailer', 'Teaser'].includes(video.type) && /^[\w-]{11}$/.test(video.key))
+            .filter((video) => video.official && video.site === 'YouTube' && ['Trailer', 'Teaser'].includes(video.type) && /^[\w-]{11}$/.test(video.key))
             .sort((a, b) => Number(b.official) - Number(a.official) || Number(b.type === 'Trailer') - Number(a.type === 'Trailer'))[0];
           trending[index] = { ...movie, featured_video_key: trailer?.key ?? null };
         } catch (error) {
@@ -98,6 +99,39 @@ Deno.serve(async (request) => {
     };
     await Promise.all(Array.from({ length: Math.min(4, trending.length) }, addTrailer));
     return jsonResponse({ trending });
+  }
+
+  if (payload?.action === 'watch-options') {
+    if (!Number.isInteger(payload.movie_id) || (payload.movie_id as number) < 1) {
+      return jsonResponse({ error: 'A valid TMDB movie ID is required.' }, 400);
+    }
+    const country = typeof payload.country === 'string' ? payload.country : '';
+    if (!/^[A-Z]{2}$/.test(country)) return jsonResponse({ error: 'Provide a two-letter uppercase country code.' }, 400);
+
+    const headers = { Authorization: 'Bearer ' + token, Accept: 'application/json' };
+    const providersUrl = new URL(`https://api.themoviedb.org/3/movie/${payload.movie_id}/watch/providers`);
+    const videosUrl = new URL(`https://api.themoviedb.org/3/movie/${payload.movie_id}/videos`);
+    videosUrl.searchParams.set('language', 'en-US');
+    let providerResponse: Response;
+    let videoResponse: Response;
+    try {
+      [providerResponse, videoResponse] = await Promise.all([fetch(providersUrl, { headers }), fetch(videosUrl, { headers })]);
+    } catch (error) {
+      console.error(`TMDB watch details lookup failed for movie ${payload.movie_id}.`, error);
+      return jsonResponse({ error: 'Unable to connect to TMDB for watch options.' }, 502);
+    }
+    if (!providerResponse.ok || !videoResponse.ok) {
+      const status = !providerResponse.ok ? providerResponse.status : videoResponse.status;
+      console.error(`TMDB watch details lookup returned HTTP ${status} for movie ${payload.movie_id}.`);
+      return jsonResponse({ error: `TMDB watch details lookup returned HTTP ${status}.` }, 502);
+    }
+    const [providerData, videoData] = await Promise.all([providerResponse.json(), videoResponse.json()]);
+    const providers = providerData.results?.[country] ?? null;
+    const videos: MovieVideo[] = Array.isArray(videoData.results) ? videoData.results : [];
+    const trailer = videos
+      .filter((video) => video.site === 'YouTube' && ['Trailer', 'Teaser'].includes(video.type) && /^[\w-]{11}$/.test(video.key))
+      .sort((a, b) => Number(b.official) - Number(a.official) || Number(b.type === 'Trailer') - Number(a.type === 'Trailer'))[0];
+    return jsonResponse({ country, providers, trailer_key: trailer?.key ?? null });
   }
 
   if (!payload || !Array.isArray(payload.titles) || payload.titles.length < 1 || payload.titles.length > 25) {

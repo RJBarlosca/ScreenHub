@@ -519,7 +519,80 @@ function WatchlistPage({ watchlist, toggleWatchlist }) {
 function TitlePage({ watchlist, toggleWatchlist }) {
   const { slug = '' } = useParams(); const { movies } = useContext(TmdbPostersContext); const item = movies.find((entry) => titleSlug(entry.title) === slug); const saved = item && watchlist.includes(item.title); const [imageFailed, setImageFailed] = useState(false); const posterPath = item && !imageFailed && item.posterPath;
   if (!item) return <PageShell eyebrow="SCREENHUB" title="Story not found." description="That title isn’t in our collection yet."><Link to="/browse">Explore the collection →</Link></PageShell>;
-  return <><Header /><main className="title-page"><Link to="/browse" className="back-link detail-back">← Back to discover</Link><section className="title-detail-hero"><div className={`detail-poster art-${item.mood || 'default'} ${posterPath ? 'has-tmdb-poster' : ''}`}>{posterPath && <img src={`https://image.tmdb.org/t/p/w500${posterPath}`} alt={`${item.title} poster`} onError={() => setImageFailed(true)} />}<span>{item.title}</span></div><div className="title-copy"><div className="eyebrow">TMDB MOVIE</div><h1>{item.title}</h1><div className="detail-tags"><span>{item.year}</span><span>{item.genre}</span><span>Movie</span><span className="rating-pill">★ {item.rating}</span></div><p>{item.description}</p><div className="hero-actions"><a className="primary-btn" href={`https://www.youtube.com/results?search_query=${encodeURIComponent(`${item.title} official trailer`)}`} target="_blank" rel="noreferrer">▶ Find trailer</a><button className="quiet-btn" onClick={() => toggleWatchlist(item.title)}>{saved ? '✓ Saved to my list' : '+ Add to my list'}</button></div></div></section><section className="title-details"><div><span>ABOUT THIS TITLE</span><h2>A story worth settling in for.</h2><p>{item.description}</p></div><Link className="detail-genre" to={`/genre/${encodeURIComponent(item.genre.toLowerCase())}`}>More {item.genre} films <b>Explore collection →</b></Link></section><MovieRow title="You may also like" items={movies.filter((other) => other.id !== item.id && other.genres.some((itemGenre) => item.genres.includes(itemGenre))).slice(0, 6)} watchlist={watchlist} toggleWatchlist={toggleWatchlist} /><Footer /></main></>;
+  return <><Header /><main className="title-page"><Link to="/browse" className="back-link detail-back">← Back to discover</Link><section className="title-detail-hero"><div className={`detail-poster art-${item.mood || 'default'} ${posterPath ? 'has-tmdb-poster' : ''}`}>{posterPath && <img src={`https://image.tmdb.org/t/p/w500${posterPath}`} alt={`${item.title} poster`} onError={() => setImageFailed(true)} />}<span>{item.title}</span></div><div className="title-copy"><div className="eyebrow">TMDB MOVIE</div><h1>{item.title}</h1><div className="detail-tags"><span>{item.year}</span><span>{item.genre}</span><span>Movie</span><span className="rating-pill">★ {item.rating}</span></div><p>{item.description}</p><div className="hero-actions"><button className="primary-btn" type="button" onClick={() => document.getElementById('movie-watch-options')?.scrollIntoView({ behavior: 'smooth', block: 'center' })}>▶ Watch options</button><button className="quiet-btn" onClick={() => toggleWatchlist(item.title)}>{saved ? '✓ Saved to my list' : '+ Add to my list'}</button></div></div></section><MovieViewingOptions movie={item} /><section className="title-details"><div><span>ABOUT THIS TITLE</span><h2>A story worth settling in for.</h2><p>{item.description}</p></div><Link className="detail-genre" to={`/genre/${encodeURIComponent(item.genre.toLowerCase())}`}>More {item.genre} films <b>Explore collection →</b></Link></section><MovieRow title="You may also like" items={movies.filter((other) => other.id !== item.id && other.genres.some((itemGenre) => item.genres.includes(itemGenre))).slice(0, 6)} watchlist={watchlist} toggleWatchlist={toggleWatchlist} /><Footer /></main></>;
+}
+
+const providerGroups = [
+  { key: 'flatrate', label: 'Stream' },
+  { key: 'free', label: 'Free' },
+  { key: 'ads', label: 'Free with ads' },
+  { key: 'rent', label: 'Rent' },
+  { key: 'buy', label: 'Buy' },
+];
+
+function MovieViewingOptions({ movie }) {
+  const [watchData, setWatchData] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState('');
+  const [playingTrailer, setPlayingTrailer] = useState(false);
+  const [retryCount, setRetryCount] = useState(0);
+
+  useEffect(() => {
+    let active = true;
+    setLoading(true);
+    setError('');
+    setWatchData(null);
+    setPlayingTrailer(false);
+    supabase.functions.invoke('tmdb-posters', {
+      body: { action: 'watch-options', movie_id: movie.id, country: 'PH' },
+    }).then(({ data, error: invokeError }) => {
+      if (invokeError) {
+        const response = invokeError.context;
+        if (response instanceof Response) {
+          return response.clone().json().catch(() => null).then((details) => {
+            throw new Error(details?.error || `${invokeError.message} (HTTP ${response.status})`);
+          });
+        }
+        throw invokeError;
+      }
+      if (!data || typeof data !== 'object' || (data.trailer_key !== null && data.trailer_key !== undefined && !/^[\w-]{11}$/.test(data.trailer_key))) {
+        throw new Error('TMDB returned invalid movie viewing details.');
+      }
+      if (active) setWatchData(data);
+      return undefined;
+    }).catch((cause) => {
+      if (!active) return;
+      console.error(`Unable to load viewing options for ${movie.title}.`, cause);
+      setError(cause instanceof Error ? cause.message : 'An unexpected error occurred.');
+    }).finally(() => {
+      if (active) setLoading(false);
+    });
+    return () => { active = false; };
+  }, [movie.id, retryCount]);
+
+  const trailerKey = watchData?.trailer_key || movie.trailerKey;
+  const providers = watchData?.providers;
+  const availableGroups = providerGroups.flatMap(({ key, label }) => {
+    const entries = Array.isArray(providers?.[key]) ? providers[key] : [];
+    const unique = [...new Map(entries.filter((provider) => provider && Number.isInteger(provider.provider_id)).map((provider) => [provider.provider_id, provider])).values()];
+    return unique.length ? [{ key, label, entries: unique }] : [];
+  });
+  const whereToWatch = providers?.link || `https://www.justwatch.com/ph/search?q=${encodeURIComponent(movie.title)}`;
+
+  return <section className="movie-viewing-options" id="movie-watch-options" aria-labelledby="movie-viewing-heading">
+    <div className="viewing-options-copy"><div className="eyebrow">OFFICIAL VIEWING OPTIONS</div><h2 id="movie-viewing-heading">Ready to watch?</h2><p>Play the official trailer or check legal streaming and rental services available in the Philippines.</p></div>
+    <div className="viewing-actions">
+      {trailerKey ? <button className="primary-btn" type="button" onClick={() => setPlayingTrailer((playing) => !playing)}>{playingTrailer ? 'Close trailer' : '▶ Play official trailer'}</button> : <a className="primary-btn" href={`https://www.youtube.com/results?search_query=${encodeURIComponent(`${movie.title} official trailer`)}`} target="_blank" rel="noreferrer">Find official trailer ↗</a>}
+      <a className="quiet-btn" href={whereToWatch} target="_blank" rel="noreferrer">{providers?.link ? 'See streaming options ↗' : 'Check availability ↗'}</a>
+    </div>
+    {playingTrailer && trailerKey && <div className="official-trailer"><iframe src={`https://www.youtube-nocookie.com/embed/${trailerKey}?autoplay=1&playsinline=1&rel=0`} title={`${movie.title} official trailer`} allow="autoplay; encrypted-media; picture-in-picture" allowFullScreen referrerPolicy="strict-origin-when-cross-origin" /></div>}
+    {loading && <p className="provider-status" role="status">Checking legal services in the Philippines…</p>}
+    {error && <div className="provider-error" role="alert"><span>{error}</span><button type="button" onClick={() => setRetryCount((count) => count + 1)}>Retry</button></div>}
+    {!loading && !error && <div className="provider-list">
+      {availableGroups.length ? availableGroups.map(({ key, label, entries }) => <div className="provider-group" key={key}><h3>{label}</h3><div>{entries.map((provider) => <span className="provider-badge" key={provider.provider_id}>{provider.logo_path && <img src={`https://image.tmdb.org/t/p/w92${provider.logo_path}`} alt="" loading="lazy" />}<span>{provider.provider_name}</span></span>)}</div></div>) : <p className="provider-status">TMDB currently lists no streaming services for this movie in the Philippines. Check again later for availability.</p>}
+    </div>}
+    <p className="provider-disclaimer">Availability is provided by TMDB and may change. ScreenHub does not host or stream full movies.</p>
+  </section>;
 }
 
 function Footer() { return <><div className="tmdb-attribution"><a href="https://www.themoviedb.org/" target="_blank" rel="noreferrer" aria-label="Visit The Movie Database">TMDB</a><p>This application uses TMDB and the TMDB APIs but is not endorsed, certified, or otherwise approved by TMDB.</p></div><footer className="site-footer"><Link className="wordmark" to="/home">SCREEN<span>HUB</span></Link><span>Good stories bring us together.</span><Link to="/profile">Your account ↗</Link></footer></>; }
