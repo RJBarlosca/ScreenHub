@@ -93,10 +93,29 @@ const tmdbGenreNames = {
   10752: 'Action', 10770: 'Drama',
 };
 const titleSlug = (title) => title.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '');
-const TmdbPostersContext = createContext({ movies: [], loading: false, error: '' });
+const TmdbPostersContext = createContext({ movies: [], trending: [], loading: false, error: '', trendingLoading: false, trendingError: '' });
 const posterCacheKey = 'screenhub-tmdb-movies-v5';
 const posterCacheDuration = 7 * 24 * 60 * 60 * 1000;
 let pendingPosterRequest;
+let pendingTrendingRequest;
+
+function toCatalogMovie(movie, mood = 'default') {
+  const mappedGenres = movie.genre_ids.map((id) => tmdbGenreNames[id]).filter(Boolean);
+  return {
+    id: movie.id,
+    title: movie.title,
+    genre: mappedGenres[0] || 'Other',
+    genres: mappedGenres,
+    year: movie.release_date?.match(/^\d{4}/)?.[0] || 'TBA',
+    rating: Number.isFinite(movie.vote_average) ? movie.vote_average.toFixed(1) : '—',
+    runtime: 'Movie',
+    description: movie.overview || 'No overview is available for this title.',
+    mood,
+    posterPath: movie.poster_path,
+    backdropPath: movie.backdrop_path,
+    trailerKey: movie.featured_video_key || null,
+  };
+}
 
 async function invokePosterLookup(titles) {
   const batches = [];
@@ -115,6 +134,27 @@ async function invokePosterLookup(titles) {
     return data.movies;
   }));
   return Object.assign({}, ...responses);
+}
+
+async function invokeTrendingLookup() {
+  const { data, error } = await supabase.functions.invoke('tmdb-posters', { body: { action: 'trending' } });
+  if (error) {
+    const response = error.context;
+    if (response instanceof Response) {
+      const details = await response.clone().json().catch(() => null);
+      throw new Error(details?.error || `${error.message} (HTTP ${response.status})`);
+    }
+    throw error;
+  }
+  if (!Array.isArray(data?.trending)) throw new Error('TMDB returned an invalid trending movies response.');
+  return data.trending.filter((movie) =>
+    movie &&
+    Number.isInteger(movie.id) &&
+    typeof movie.title === 'string' &&
+    Array.isArray(movie.genre_ids) &&
+    typeof movie.vote_average === 'number' &&
+    (movie.featured_video_key === undefined || movie.featured_video_key === null || /^[\w-]{11}$/.test(movie.featured_video_key))
+  );
 }
 
 function readPosterCache() {
@@ -142,8 +182,11 @@ function readPosterCache() {
 function TmdbPostersProvider({ children }) {
   const { session } = useAuth();
   const [tmdbMovies, setTmdbMovies] = useState(readPosterCache);
+  const [trendingMovies, setTrendingMovies] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
+  const [trendingLoading, setTrendingLoading] = useState(false);
+  const [trendingError, setTrendingError] = useState('');
   const [loaded, setLoaded] = useState(false);
   const [retryCount, setRetryCount] = useState(0);
 
@@ -185,6 +228,26 @@ function TmdbPostersProvider({ children }) {
     return () => { active = false; };
   }, [session?.user?.id, retryCount]);
 
+  useEffect(() => {
+    if (!session?.user?.id || !supabase) return undefined;
+    let active = true;
+    setTrendingLoading(true);
+    setTrendingError('');
+    if (!pendingTrendingRequest) {
+      pendingTrendingRequest = invokeTrendingLookup().finally(() => { pendingTrendingRequest = undefined; });
+    }
+    pendingTrendingRequest.then((result) => {
+      if (active) setTrendingMovies(result);
+    }).catch((cause) => {
+      if (!active) return;
+      console.error('Unable to load globally trending TMDB movies.', cause);
+      setTrendingError(cause instanceof Error ? cause.message : 'An unexpected error occurred.');
+    }).finally(() => {
+      if (active) setTrendingLoading(false);
+    });
+    return () => { active = false; };
+  }, [session?.user?.id, retryCount]);
+
   const retry = () => {
     setError('');
     setRetryCount((count) => count + 1);
@@ -194,24 +257,13 @@ function TmdbPostersProvider({ children }) {
   const catalog = Object.entries(tmdbMovies).flatMap(([seedTitle, movie]) => {
     const seed = movieBySeed.get(seedTitle);
     if (!seed || !movie) return [];
-    const releaseYear = movie.release_date?.match(/^\d{4}/)?.[0] || 'TBA';
-    return [{
-      id: movie.id,
-      title: movie.title,
-      genre: movie.genre_ids.map((id) => tmdbGenreNames[id]).filter(Boolean)[0] || 'Other',
-      genres: movie.genre_ids.map((id) => tmdbGenreNames[id]).filter(Boolean),
-      year: releaseYear,
-      rating: Number.isFinite(movie.vote_average) ? movie.vote_average.toFixed(1) : '—',
-      runtime: 'Movie',
-      description: movie.overview || 'No overview is available for this title.',
-      mood: seed.mood,
-      posterPath: movie.poster_path,
-      backdropPath: movie.backdrop_path,
-      trailerKey: movie.featured_video_key || null,
-    }];
+    return [toCatalogMovie(movie, seed.mood)];
   });
+  const trending = trendingMovies.map((movie) => toCatalogMovie(movie));
+  const trendingIds = new Set(trending.map((movie) => movie.id));
+  const completeCatalog = [...trending, ...catalog.filter((movie) => !trendingIds.has(movie.id))];
 
-  return <TmdbPostersContext.Provider value={{ movies: catalog, loading, error, loaded, retry }}>{children}</TmdbPostersContext.Provider>;
+  return <TmdbPostersContext.Provider value={{ movies: completeCatalog, trending, loading, error, trendingLoading, trendingError, loaded, retry }}>{children}</TmdbPostersContext.Provider>;
 }
 
 function SetupNotice() {
@@ -386,17 +438,33 @@ function MovieRow({ title, items, watchlist, toggleWatchlist, link = '/browse' }
   return <section className="catalog-section"><div className="section-heading"><h2>{title}</h2><Link to={link}>Explore all <span>→</span></Link></div><div className="poster-row">{items.map((item) => <PosterCard key={item.title} item={item} watchlist={watchlist} toggleWatchlist={toggleWatchlist} />)}</div></section>;
 }
 
-function Home({ watchlist, toggleWatchlist }) {
-  const { movies, loading, error } = useContext(TmdbPostersContext);
-  const featured = movies.find((movie) => movie.trailerKey) || movies[0];
-  if (!featured) return <><Header /><PosterServiceNotice /><main className="home-page">{loading ? <p className="empty-state">Loading movies from TMDB…</p> : error ? <p className="empty-state">We couldn’t load TMDB movies. Use Retry above to try again.</p> : <p className="empty-state">No movies from TMDB are available in the catalog yet.</p>}<Footer /></main></>;
+function TrendingHero({ movies, loading, error, watchlist, toggleWatchlist }) {
+  const [activeIndex, setActiveIndex] = useState(0);
+  const [touchStartX, setTouchStartX] = useState(null);
+  if (!movies.length) return <section className="featured-hero trending-hero-empty" aria-live="polite"><div className="hero-grain" /><div className="hero-copy"><div className="eyebrow">GLOBAL MOVIE TRENDS</div><h1>{loading ? 'Loading trending movies…' : 'Trending is unavailable'}</h1><p>{error || 'TMDB has not returned globally trending movies yet. Please try again shortly.'}</p></div></section>;
+  const slideIndex = activeIndex % movies.length;
+  const featured = movies[slideIndex];
   const heroBackdrop = featured.backdropPath || featured.posterPath;
-  const usedGenreArtwork = new Set();
-  return <><Header /><PosterServiceNotice /><main className="home-page"><section className={`featured-hero feature-${featured.genre.toLowerCase().replace(/[^a-z0-9]+/g, '-')}`}>
+  const moveSlide = (direction) => setActiveIndex((current) => (current + direction + movies.length) % movies.length);
+  const endSwipe = (event) => {
+    if (touchStartX === null) return;
+    const distance = event.changedTouches[0].clientX - touchStartX;
+    if (Math.abs(distance) > 45) moveSlide(distance < 0 ? 1 : -1);
+    setTouchStartX(null);
+  };
+  return <section className={`featured-hero trending-hero feature-${featured.genre.toLowerCase().replace(/[^a-z0-9]+/g, '-')}`} onTouchStart={(event) => setTouchStartX(event.changedTouches[0].clientX)} onTouchEnd={endSwipe} aria-roledescription="carousel" aria-label="Globally trending movies">
     {heroBackdrop && <img className="feature-backdrop" src={`https://image.tmdb.org/t/p/original${heroBackdrop}`} alt="" aria-hidden="true" />}
     {featured.trailerKey && <iframe className="feature-video" src={`https://www.youtube-nocookie.com/embed/${featured.trailerKey}?autoplay=1&mute=1&controls=0&loop=1&playlist=${featured.trailerKey}&playsinline=1&modestbranding=1&rel=0`} title={`Muted looping trailer for ${featured.title}`} aria-hidden="true" tabIndex="-1" allow="autoplay; encrypted-media; picture-in-picture" referrerPolicy="strict-origin-when-cross-origin" />}
     <div className="hero-grain" />
-    <div className="hero-copy"><div className="eyebrow"><span className="live-dot" /> VERIFIED ON TMDB</div><div className="hero-label">FEATURED MOVIE</div><h1>{featured.title}</h1><p>{featured.description}</p><div className="hero-meta"><span className="rating-pill">★ {featured.rating}</span><span>{featured.year}</span><span>{featured.genre}</span></div><div className="hero-actions"><Link className="primary-btn hero-btn" to={`/title/${titleSlug(featured.title)}`}>View movie <span>→</span></Link><button className="quiet-btn" onClick={() => toggleWatchlist(featured.title)}>{watchlist.includes(featured.title) ? '✓ In my list' : '+ Add to my list'}</button></div></div><div className="hero-index"><span>01</span><i /> {movies.length.toString().padStart(2, '0')}</div></section>
+    <div className="hero-copy" aria-live="polite"><div className="eyebrow"><span className="live-dot" /> GLOBAL TMDB TRENDING</div><div className="hero-label">TRENDING THIS WEEK · {slideIndex + 1} OF {movies.length}</div><h1>{featured.title}</h1><p>{featured.description}</p><div className="hero-meta"><span className="rating-pill">★ {featured.rating}</span><span>{featured.year}</span><span>{featured.genre}</span></div><div className="hero-actions"><Link className="primary-btn hero-btn" to={`/title/${titleSlug(featured.title)}`}>View movie <span>→</span></Link><button className="quiet-btn" onClick={() => toggleWatchlist(featured.title)}>{watchlist.includes(featured.title) ? '✓ In my list' : '+ Add to my list'}</button></div></div>
+    <div className="hero-carousel-controls"><button type="button" onClick={() => moveSlide(-1)} aria-label="Previous trending movie">←</button><div className="hero-carousel-dots">{movies.map((movie, index) => <button type="button" key={movie.id} className={index === slideIndex ? 'selected' : ''} onClick={() => setActiveIndex(index)} aria-label={`Show trending movie ${index + 1}: ${movie.title}`} aria-current={index === slideIndex ? 'true' : undefined} />)}</div><button type="button" onClick={() => moveSlide(1)} aria-label="Next trending movie">→</button></div>
+  </section>;
+}
+
+function Home({ watchlist, toggleWatchlist }) {
+  const { movies, trending, trendingLoading, trendingError } = useContext(TmdbPostersContext);
+  const usedGenreArtwork = new Set();
+  return <><Header /><PosterServiceNotice /><main className="home-page"><TrendingHero movies={trending} loading={trendingLoading} error={trendingError} watchlist={watchlist} toggleWatchlist={toggleWatchlist} />
     <div className="home-intro"><div><div className="eyebrow">CURATED FOR YOUR NEXT MOVIE NIGHT</div><h2>Find your <em>kind</em> of story.</h2></div><Link className="all-genres-link" to="/browse">Browse all genres <span>→</span></Link></div><div className="genre-shortcuts">{genres.slice(0, 6).map((genre, index) => {
       const candidates = movies.filter((movie) => movie.genres.includes(genre)).sort((a, b) => Number(b.genre === genre) - Number(a.genre === genre));
       const genreMovie = candidates.find((movie) => !usedGenreArtwork.has(movie.backdropPath || movie.posterPath)) || candidates[0];
@@ -454,7 +522,7 @@ function TitlePage({ watchlist, toggleWatchlist }) {
   return <><Header /><main className="title-page"><Link to="/browse" className="back-link detail-back">← Back to discover</Link><section className="title-detail-hero"><div className={`detail-poster art-${item.mood || 'default'} ${posterPath ? 'has-tmdb-poster' : ''}`}>{posterPath && <img src={`https://image.tmdb.org/t/p/w500${posterPath}`} alt={`${item.title} poster`} onError={() => setImageFailed(true)} />}<span>{item.title}</span></div><div className="title-copy"><div className="eyebrow">TMDB MOVIE</div><h1>{item.title}</h1><div className="detail-tags"><span>{item.year}</span><span>{item.genre}</span><span>Movie</span><span className="rating-pill">★ {item.rating}</span></div><p>{item.description}</p><div className="hero-actions"><a className="primary-btn" href={`https://www.youtube.com/results?search_query=${encodeURIComponent(`${item.title} official trailer`)}`} target="_blank" rel="noreferrer">▶ Find trailer</a><button className="quiet-btn" onClick={() => toggleWatchlist(item.title)}>{saved ? '✓ Saved to my list' : '+ Add to my list'}</button></div></div></section><section className="title-details"><div><span>ABOUT THIS TITLE</span><h2>A story worth settling in for.</h2><p>{item.description}</p></div><Link className="detail-genre" to={`/genre/${encodeURIComponent(item.genre.toLowerCase())}`}>More {item.genre} films <b>Explore collection →</b></Link></section><MovieRow title="You may also like" items={movies.filter((other) => other.id !== item.id && other.genres.some((itemGenre) => item.genres.includes(itemGenre))).slice(0, 6)} watchlist={watchlist} toggleWatchlist={toggleWatchlist} /><Footer /></main></>;
 }
 
-function Footer() { return <><div className="tmdb-attribution"><a href="https://www.themoviedb.org/" target="_blank" rel="noreferrer"><img src="https://www.themoviedb.org/assets/2/v4/logos/stacked-green.svg" alt="The Movie Database (TMDB)" /></a><p>This application uses TMDB and the TMDB APIs but is not endorsed, certified, or otherwise approved by TMDB.</p></div><footer className="site-footer"><Link className="wordmark" to="/home">SCREEN<span>HUB</span></Link><span>Good stories bring us together.</span><Link to="/profile">Your account ↗</Link></footer></>; }
+function Footer() { return <><div className="tmdb-attribution"><a href="https://www.themoviedb.org/" target="_blank" rel="noreferrer" aria-label="Visit The Movie Database">TMDB</a><p>This application uses TMDB and the TMDB APIs but is not endorsed, certified, or otherwise approved by TMDB.</p></div><footer className="site-footer"><Link className="wordmark" to="/home">SCREEN<span>HUB</span></Link><span>Good stories bring us together.</span><Link to="/profile">Your account ↗</Link></footer></>; }
 
 function Profile() {
   const { profile, session, setProfile } = useAuth(); const navigate = useNavigate(); const [username, setUsername] = useState(profile?.username ?? ''); const [avatar, setAvatar] = useState(profile?.avatar ?? ''); const [characterQuery, setCharacterQuery] = useState(''); const [characters, setCharacters] = useState([]); const [searching, setSearching] = useState(false); const [searchError, setSearchError] = useState(''); const [password, setPassword] = useState(''); const [notice, setNotice] = useState(''); const [error, setError] = useState(''); const [busy, setBusy] = useState(false);

@@ -14,14 +14,14 @@ For email confirmation and password reset links, add your local Vite address (us
 
 ## TMDB movie posters
 
-ScreenHub verifies its curated movie titles against TMDB before displaying them. Displayed titles, genres, release years, ratings, overviews, and poster paths come from TMDB; movies that do not exactly match a TMDB movie result are omitted. To enable it:
+ScreenHub verifies its curated movie titles against TMDB before displaying them and features a swipeable selection from TMDB's globally trending movies of the week. Displayed trending details, genres, release years, ratings, overviews, posters, and backdrops come from TMDB; movies that do not exactly match a TMDB movie result are omitted. To enable it:
 
 1. Create an API Read Access Token in [TMDB API settings](https://www.themoviedb.org/settings/api).
 2. In your Supabase dashboard, open **Edge Functions → Secrets** and add `TMDB_API_READ_ACCESS_TOKEN` with that token as its value. Do not put the token in a `VITE_` variable or browser code.
 3. From this project folder, deploy the proxy with `npx supabase functions deploy tmdb-posters --project-ref YOUR_PROJECT_REF`. The deployed function uses Supabase JWT verification and calls TMDB without exposing the token to the browser.
 4. Sign in to ScreenHub. Successfully resolved TMDB movie records are cached in the browser for up to 7 days.
 
-The app displays TMDB's logo and required attribution in its footer. Review [TMDB's API terms](https://www.themoviedb.org/api-terms-of-use) before use; commercial use requires a separate written agreement with TMDB.
+The app includes a text link to TMDB and its required attribution in the footer. Review [TMDB's API terms](https://www.themoviedb.org/api-terms-of-use) before use; commercial use requires a separate written agreement with TMDB.
 
 ## Existing accounts
 

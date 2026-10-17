@@ -19,6 +19,7 @@ type MovieSearchResult = {
   featured_video_key?: string | null;
 };
 type MovieVideo = { key: string; site: string; type: string; official: boolean; published_at?: string };
+type TrendingRequest = { action?: string; titles?: unknown };
 
 function jsonResponse(body: unknown, status = 200) {
   return new Response(JSON.stringify(body), { status, headers: corsHeaders });
@@ -35,11 +36,68 @@ Deno.serve(async (request) => {
   const token = Deno.env.get('TMDB_API_READ_ACCESS_TOKEN');
   if (!token) return jsonResponse({ error: 'TMDB_API_READ_ACCESS_TOKEN is not configured for this Edge Function.' }, 500);
 
-  let payload: { titles?: unknown };
+  let payload: TrendingRequest;
   try {
     payload = await request.json();
   } catch {
     return jsonResponse({ error: 'Request body must be valid JSON.' }, 400);
+  }
+
+  if (payload?.action === 'trending') {
+    const trendingUrl = new URL('https://api.themoviedb.org/3/trending/movie/week');
+    trendingUrl.searchParams.set('language', 'en-US');
+    trendingUrl.searchParams.set('page', '1');
+    let response: Response;
+    try {
+      response = await fetch(trendingUrl, {
+        headers: { Authorization: 'Bearer ' + token, Accept: 'application/json' },
+      });
+    } catch (error) {
+      console.error('TMDB trending lookup failed.', error);
+      return jsonResponse({ error: 'Unable to connect to TMDB for trending movies.' }, 502);
+    }
+    if (!response.ok) {
+      console.error(`TMDB trending lookup returned HTTP ${response.status}.`);
+      return jsonResponse({ error: `TMDB trending lookup returned HTTP ${response.status}.` }, 502);
+    }
+    const data = await response.json();
+    const trending: MovieSearchResult[] = (Array.isArray(data.results) ? data.results : [])
+      .filter((movie: MovieSearchResult) =>
+        movie &&
+        Number.isInteger(movie.id) &&
+        typeof movie.title === 'string' &&
+        Array.isArray(movie.genre_ids) &&
+        (typeof movie.backdrop_path === 'string' || typeof movie.poster_path === 'string')
+      )
+      .slice(0, 10);
+    let nextIndex = 0;
+    const addTrailer = async () => {
+      while (nextIndex < trending.length) {
+        const index = nextIndex++;
+        const movie = trending[index];
+        const videosUrl = new URL(`https://api.themoviedb.org/3/movie/${movie.id}/videos`);
+        videosUrl.searchParams.set('language', 'en-US');
+        try {
+          const videoResponse = await fetch(videosUrl, {
+            headers: { Authorization: 'Bearer ' + token, Accept: 'application/json' },
+          });
+          if (!videoResponse.ok) {
+            console.warn(`TMDB trailer lookup returned HTTP ${videoResponse.status} for trending movie ${movie.id}.`);
+            continue;
+          }
+          const videoData = await videoResponse.json();
+          const videos: MovieVideo[] = Array.isArray(videoData.results) ? videoData.results : [];
+          const trailer = videos
+            .filter((video) => video.site === 'YouTube' && ['Trailer', 'Teaser'].includes(video.type) && /^[\w-]{11}$/.test(video.key))
+            .sort((a, b) => Number(b.official) - Number(a.official) || Number(b.type === 'Trailer') - Number(a.type === 'Trailer'))[0];
+          trending[index] = { ...movie, featured_video_key: trailer?.key ?? null };
+        } catch (error) {
+          console.warn(`TMDB trailer lookup failed for trending movie ${movie.id}.`, error);
+        }
+      }
+    };
+    await Promise.all(Array.from({ length: Math.min(4, trending.length) }, addTrailer));
+    return jsonResponse({ trending });
   }
 
   if (!payload || !Array.isArray(payload.titles) || payload.titles.length < 1 || payload.titles.length > 25) {

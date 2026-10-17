@@ -35,6 +35,18 @@ body{background:var(--ink);color:var(--cream);letter-spacing:.01em}button{color:
 .genre-tile::before{z-index:0;background-image:linear-gradient(0deg,#0a090bf0 0%,#0a090b22 72%),radial-gradient(ellipse at 100% 0%,var(--tile,#694439),transparent 70%),var(--genre-image,none);background-position:center;background-size:cover;opacity:.84}
 .genre-tile>span,.genre-tile>strong,.genre-tile>i{position:relative;z-index:1}
 @media(max-width:700px){.poster-card{flex-basis:155px}.featured-hero .feature-video{opacity:.68}}
+.hero-carousel-controls{position:absolute;z-index:4;right:clamp(22px,5vw,78px);bottom:24px;display:flex;align-items:center;gap:12px}
+.hero-carousel-controls>button{width:36px;height:36px;border:1px solid #ffffff66;border-radius:50%;background:#08080bb0;color:#fff;font-size:18px;cursor:pointer}
+.hero-carousel-controls>button:hover{background:#e85d50;border-color:#e85d50}
+.hero-carousel-dots{display:flex;align-items:center;gap:7px}
+.hero-carousel-dots button{width:7px;height:7px;padding:0;border:0;border-radius:50%;background:#ffffff78;cursor:pointer}
+.hero-carousel-dots button.selected{width:20px;border-radius:5px;background:#ed6557}
+.trending-hero-empty{display:flex;align-items:center}
+.trending-hero-empty .hero-copy{position:relative;inset:auto;z-index:3;padding:clamp(24px,8vw,110px);width:min(720px,90%)}
+.trending-hero-empty .hero-copy h1{font-size:clamp(30px,5vw,64px)}
+.tmdb-attribution>a{width:auto!important;color:#53b9a8;font-weight:800;letter-spacing:.08em;text-decoration:none}
+.tmdb-attribution>a:hover{color:#8addce}
+@media(max-width:700px){.hero-carousel-controls{right:20px;bottom:18px}.hero-carousel-controls>button{width:32px;height:32px}.hero-carousel-dots{gap:5px}.hero-carousel-dots button{width:6px;height:6px}}
 .poster-service-notice.error{border-color:#e95e4f77;color:#ffb4ad}
 .poster-service-notice button{padding:5px 12px;border:1px solid currentColor;border-radius:3px;background:transparent;color:inherit;font-size:11px}
 .poster-service-notice button:hover{background:#ffffff12}
