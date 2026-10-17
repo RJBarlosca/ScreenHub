@@ -391,14 +391,17 @@ function Home({ watchlist, toggleWatchlist }) {
   const featured = movies.find((movie) => movie.trailerKey) || movies[0];
   if (!featured) return <><Header /><PosterServiceNotice /><main className="home-page">{loading ? <p className="empty-state">Loading movies from TMDB…</p> : error ? <p className="empty-state">We couldn’t load TMDB movies. Use Retry above to try again.</p> : <p className="empty-state">No movies from TMDB are available in the catalog yet.</p>}<Footer /></main></>;
   const heroBackdrop = featured.backdropPath || featured.posterPath;
+  const usedGenreArtwork = new Set();
   return <><Header /><PosterServiceNotice /><main className="home-page"><section className={`featured-hero feature-${featured.genre.toLowerCase().replace(/[^a-z0-9]+/g, '-')}`}>
     {heroBackdrop && <img className="feature-backdrop" src={`https://image.tmdb.org/t/p/original${heroBackdrop}`} alt="" aria-hidden="true" />}
     {featured.trailerKey && <iframe className="feature-video" src={`https://www.youtube-nocookie.com/embed/${featured.trailerKey}?autoplay=1&mute=1&controls=0&loop=1&playlist=${featured.trailerKey}&playsinline=1&modestbranding=1&rel=0`} title={`Muted looping trailer for ${featured.title}`} aria-hidden="true" tabIndex="-1" allow="autoplay; encrypted-media; picture-in-picture" referrerPolicy="strict-origin-when-cross-origin" />}
     <div className="hero-grain" />
     <div className="hero-copy"><div className="eyebrow"><span className="live-dot" /> VERIFIED ON TMDB</div><div className="hero-label">FEATURED MOVIE</div><h1>{featured.title}</h1><p>{featured.description}</p><div className="hero-meta"><span className="rating-pill">★ {featured.rating}</span><span>{featured.year}</span><span>{featured.genre}</span></div><div className="hero-actions"><Link className="primary-btn hero-btn" to={`/title/${titleSlug(featured.title)}`}>View movie <span>→</span></Link><button className="quiet-btn" onClick={() => toggleWatchlist(featured.title)}>{watchlist.includes(featured.title) ? '✓ In my list' : '+ Add to my list'}</button></div></div><div className="hero-index"><span>01</span><i /> {movies.length.toString().padStart(2, '0')}</div></section>
     <div className="home-intro"><div><div className="eyebrow">CURATED FOR YOUR NEXT MOVIE NIGHT</div><h2>Find your <em>kind</em> of story.</h2></div><Link className="all-genres-link" to="/browse">Browse all genres <span>→</span></Link></div><div className="genre-shortcuts">{genres.slice(0, 6).map((genre, index) => {
-      const genreMovie = movies.find((movie) => movie.genres.includes(genre));
+      const candidates = movies.filter((movie) => movie.genres.includes(genre)).sort((a, b) => Number(b.genre === genre) - Number(a.genre === genre));
+      const genreMovie = candidates.find((movie) => !usedGenreArtwork.has(movie.backdropPath || movie.posterPath)) || candidates[0];
       const image = genreMovie && (genreMovie.backdropPath || genreMovie.posterPath);
+      if (image) usedGenreArtwork.add(image);
       const style = image ? { '--genre-image': `url("https://image.tmdb.org/t/p/w780${image}")` } : undefined;
       return <Link key={genre} className={`genre-tile genre-tile-${index}`} style={style} to={`/genre/${encodeURIComponent(genre.toLowerCase())}`}><span>0{index + 1}</span><strong>{genre}</strong><i>↗</i></Link>;
     })}</div>
