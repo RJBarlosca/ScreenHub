@@ -54,7 +54,6 @@ const media = [
   { title: 'Deliver Us from Evil', image: '/deliver_us_from_evil.jpg', genre: 'Horror' },
   { title: 'The Shining', image: '/shining_ver2.jpg', genre: 'Horror' },
 ];
-const avatarChoices = ['gojo', 'goku', 'ichigo', 'itachi', 'levi', 'luffy', 'naruto', 'sasuke', 'tanjiro', 'zoro'];
 
 function SetupNotice() {
   if (isSupabaseConfigured) return null;
@@ -174,7 +173,7 @@ function Header() {
   const { profile } = useAuth(); const navigate = useNavigate(); const [menu, setMenu] = useState(false);
   async function signOut() { await supabase.auth.signOut(); navigate('/'); }
   const initials = `${profile?.first_name?.[0] ?? ''}${profile?.last_name?.[0] ?? ''}`.toUpperCase() || profile?.username?.[0]?.toUpperCase() || 'S';
-  return <header className="site-header"><Link className="wordmark" to="/home">SCREENHUB</Link><nav><Link to="/home">Home</Link><a href="#catalog">Movies &amp; series</a></nav><div className="header-user"><button className="avatar" onClick={() => setMenu(!menu)} aria-label="Open account menu">{profile?.avatar ? <img src={profile.avatar} /> : initials}</button>{menu && <div className="account-menu"><b>{[profile?.first_name, profile?.last_name].filter(Boolean).join(' ') || 'Your account'}</b><span>@{profile?.username}</span><Link to="/profile" onClick={() => setMenu(false)}>Edit profile</Link><button onClick={signOut}>Sign out</button></div>}</div></header>;
+  return <header className="site-header"><Link className="wordmark" to="/home">SCREENHUB</Link><nav><Link to="/home">Home</Link><a href="#catalog">Movies &amp; series</a></nav><div className="header-user"><button className="avatar" onClick={() => setMenu(!menu)} aria-label="Open account menu">{initials}</button>{menu && <div className="account-menu"><b>{[profile?.first_name, profile?.last_name].filter(Boolean).join(' ') || 'Your account'}</b><span>@{profile?.username}</span><Link to="/profile" onClick={() => setMenu(false)}>Edit profile</Link><button onClick={signOut}>Sign out</button></div>}</div></header>;
 }
 
 function PosterRow({ title, items }) { return <section className="catalog-section" id="catalog"><div className="section-heading"><h2>{title}</h2><span>Explore all</span></div><div className="poster-row">{items.map((item) => <Link className="poster-card" to={item.title === 'Squid Game' ? '/series/squid-game' : '/home'} key={item.title}><img src={item.image} alt={item.title} /><span>{item.title}</span></Link>)}</div></section>; }
@@ -191,18 +190,18 @@ function Home() {
 }
 
 function Profile() {
-  const { profile, session, setProfile } = useAuth(); const navigate = useNavigate(); const [username, setUsername] = useState(profile?.username ?? ''); const [avatar, setAvatar] = useState(profile?.avatar ?? ''); const [password, setPassword] = useState(''); const [notice, setNotice] = useState(''); const [error, setError] = useState(''); const [busy, setBusy] = useState(false);
-  useEffect(() => { setUsername(profile?.username ?? ''); setAvatar(profile?.avatar ?? ''); }, [profile]);
+  const { profile, session, setProfile } = useAuth(); const navigate = useNavigate(); const [username, setUsername] = useState(profile?.username ?? ''); const [password, setPassword] = useState(''); const [notice, setNotice] = useState(''); const [error, setError] = useState(''); const [busy, setBusy] = useState(false);
+  useEffect(() => { setUsername(profile?.username ?? ''); }, [profile]);
   async function save(event) {
     event.preventDefault(); setNotice(''); setError(''); setBusy(true);
-    const { error: profileError } = await supabase.from('profiles').update({ username: username.trim(), avatar: avatar || null }).eq('id', session.user.id);
+    const { error: profileError } = await supabase.from('profiles').update({ username: username.trim() }).eq('id', session.user.id);
     if (profileError) { setError(profileError.code === '23505' ? 'That username is already taken.' : profileError.message); setBusy(false); return; }
     let passwordError;
     if (password) ({ error: passwordError } = await supabase.auth.updateUser({ password }));
     setBusy(false);
-    if (passwordError) setError(passwordError.message); else { setProfile({ ...profile, username: username.trim(), avatar }); setPassword(''); setNotice('Your profile has been saved.'); }
+    if (passwordError) setError(passwordError.message); else { setProfile({ ...profile, username: username.trim() }); setPassword(''); setNotice('Your profile has been saved.'); }
   }
-  return <><Header /><main className="profile-page"><Link className="back-link" to="/home">← Back to ScreenHub</Link><div className="profile-panel"><div className="eyebrow">ACCOUNT</div><h1>Your profile</h1><p className="muted">Manage your public profile and sign-in details.</p><form className="form" onSubmit={save}><Field label="Username" value={username} onChange={setUsername} minLength={3} maxLength={30} required /><label className="field"><span>Choose an avatar</span><div className="avatar-picker">{avatarChoices.map((name) => { const src = `/avatars/${name}.png`; return <button type="button" key={name} className={avatar === src ? 'picked' : ''} onClick={() => setAvatar(src)}><img src={src} alt={name} /></button>; })}</div></label><Field label="New password (leave blank to keep current)" type="password" value={password} onChange={setPassword} minLength={8} /><div className="profile-email"><span>Email</span><strong>{session?.user?.email}</strong><small>Email changes are managed through Supabase Auth.</small></div>{error && <p className="form-error">{error}</p>}{notice && <p className="form-success">{notice}</p>}<button className="primary-btn" disabled={busy}>{busy ? 'Saving…' : 'Save changes'}</button></form><button className="signout-link" onClick={async () => { await supabase.auth.signOut(); navigate('/'); }}>Sign out</button></div></main></>;
+  return <><Header /><main className="profile-page"><Link className="back-link" to="/home">← Back to ScreenHub</Link><div className="profile-panel"><div className="eyebrow">ACCOUNT</div><h1>Your profile</h1><p className="muted">Manage your username and sign-in details.</p><form className="form" onSubmit={save}><Field label="Username" value={username} onChange={setUsername} minLength={3} maxLength={30} required /><Field label="New password (leave blank to keep current)" type="password" value={password} onChange={setPassword} minLength={8} /><div className="profile-email"><span>Email</span><strong>{session?.user?.email}</strong><small>Email changes are managed through Supabase Auth.</small></div>{error && <p className="form-error">{error}</p>}{notice && <p className="form-success">{notice}</p>}<button className="primary-btn" disabled={busy}>{busy ? 'Saving…' : 'Save changes'}</button></form><button className="signout-link" onClick={async () => { await supabase.auth.signOut(); navigate('/'); }}>Sign out</button></div></main></>;
 }
 
 function Series() {
