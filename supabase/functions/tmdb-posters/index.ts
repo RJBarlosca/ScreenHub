@@ -6,7 +6,16 @@ const corsHeaders = {
 };
 
 type MovieRequest = { title: string; year?: number };
-type MovieSearchResult = { title?: string; original_title?: string; poster_path?: string | null };
+type MovieSearchResult = {
+  id: number;
+  title: string;
+  original_title: string;
+  release_date?: string;
+  genre_ids: number[];
+  vote_average: number;
+  overview: string;
+  poster_path: string | null;
+};
 
 function jsonResponse(body: unknown, status = 200) {
   return new Response(JSON.stringify(body), { status, headers: corsHeaders });
@@ -45,7 +54,7 @@ Deno.serve(async (request) => {
     titles.push({ title: item.title.trim(), year: item.year });
   }
 
-  const posters: Record<string, string | null> = {};
+  const movies: Record<string, MovieSearchResult | null> = {};
   let nextIndex = 0;
 
   const lookupNext = async () => {
@@ -65,7 +74,6 @@ Deno.serve(async (request) => {
       let results: MovieSearchResult[] = Array.isArray(data.results) ? data.results : [];
       const wanted = normalizeTitle(movie.title);
       let match = results.find((result) =>
-        result.poster_path &&
         [result.title, result.original_title].some((title) => typeof title === 'string' && normalizeTitle(title) === wanted)
       );
 
@@ -78,12 +86,11 @@ Deno.serve(async (request) => {
         data = await response.json();
         results = Array.isArray(data.results) ? data.results : [];
         match = results.find((result) =>
-          result.poster_path &&
           [result.title, result.original_title].some((title) => typeof title === 'string' && normalizeTitle(title) === wanted)
         );
       }
 
-      posters[movie.title] = match?.poster_path ?? null;
+      movies[movie.title] = match ?? null;
     }
   };
 
@@ -94,5 +101,5 @@ Deno.serve(async (request) => {
     return jsonResponse({ error: error instanceof Error ? error.message : 'TMDB poster lookup failed.' }, 502);
   }
 
-  return jsonResponse({ posters });
+  return jsonResponse({ movies });
 });

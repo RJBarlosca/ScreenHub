@@ -86,9 +86,15 @@ const media = [
   { title: 'The Social Network', genre: 'Drama', year: 2010, rating: '7.8', runtime: '2h', mood: 'batman', description: 'The creation of a social networking site brings ambition, friendship, and conflict together.' },
 ];
 const genres = ['Action', 'Adventure', 'Animation', 'Comedy', 'Drama', 'Fantasy', 'Horror', 'Romance', 'Sci-Fi', 'Thriller'];
+const tmdbGenreNames = {
+  12: 'Adventure', 14: 'Fantasy', 16: 'Animation', 18: 'Drama', 27: 'Horror', 28: 'Action',
+  35: 'Comedy', 36: 'Drama', 37: 'Adventure', 53: 'Thriller', 80: 'Thriller', 99: 'Documentary',
+  878: 'Sci-Fi', 9648: 'Mystery', 10402: 'Music', 10749: 'Romance', 10751: 'Family',
+  10752: 'Action', 10770: 'Drama',
+};
 const titleSlug = (title) => title.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '');
-const TmdbPostersContext = createContext({ posters: {}, loading: false, error: '' });
-const posterCacheKey = 'screenhub-tmdb-posters';
+const TmdbPostersContext = createContext({ movies: [], loading: false, error: '' });
+const posterCacheKey = 'screenhub-tmdb-movies-v3';
 const posterCacheDuration = 7 * 24 * 60 * 60 * 1000;
 let pendingPosterRequest;
 
@@ -105,8 +111,8 @@ async function invokePosterLookup(titles) {
       }
       throw error;
     }
-    if (!data?.posters || typeof data.posters !== 'object') throw new Error('The TMDB poster service returned an invalid response.');
-    return data.posters;
+    if (!data?.movies || typeof data.movies !== 'object') throw new Error('The TMDB movie service returned an invalid response.');
+    return data.movies;
   }));
   return Object.assign({}, ...responses);
 }
@@ -115,8 +121,16 @@ function readPosterCache() {
   try {
     const cached = JSON.parse(localStorage.getItem(posterCacheKey) || 'null');
     const now = Date.now();
-    if (!cached || !Number.isFinite(cached.savedAt) || cached.savedAt > now || now - cached.savedAt > posterCacheDuration || !cached.posters || typeof cached.posters !== 'object') return {};
-    return Object.fromEntries(Object.entries(cached.posters).filter(([, path]) => typeof path === 'string' && path.startsWith('/')));
+    if (!cached || !Number.isFinite(cached.savedAt) || cached.savedAt > now || now - cached.savedAt > posterCacheDuration || !cached.movies || typeof cached.movies !== 'object') return {};
+    return Object.fromEntries(Object.entries(cached.movies).filter(([, movie]) =>
+      movie === null || (
+        movie &&
+        typeof movie.title === 'string' &&
+        typeof movie.release_date === 'string' &&
+        Array.isArray(movie.genre_ids) &&
+        typeof movie.vote_average === 'number'
+      )
+    ));
   } catch (error) {
     console.warn('Unable to read cached TMDB posters.', error);
     return {};
@@ -125,7 +139,7 @@ function readPosterCache() {
 
 function TmdbPostersProvider({ children }) {
   const { session } = useAuth();
-  const [posters, setPosters] = useState(readPosterCache);
+  const [tmdbMovies, setTmdbMovies] = useState(readPosterCache);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [loaded, setLoaded] = useState(false);
@@ -133,8 +147,8 @@ function TmdbPostersProvider({ children }) {
 
   useEffect(() => {
     if (!session?.user?.id || !supabase) return undefined;
-    const missing = media.filter((item) => !posters[item.title]).map(({ title, year }) => ({ title, year }));
-    if (!missing.length) return undefined;
+    const missing = media.filter((item) => !Object.hasOwn(tmdbMovies, item.title)).map(({ title, year }) => ({ title, year }));
+    if (!missing.length) { setLoaded(true); return undefined; }
     let active = true;
     setLoading(true);
     setError('');
@@ -145,13 +159,15 @@ function TmdbPostersProvider({ children }) {
             .finally(() => { pendingPosterRequest = undefined; });
         }
         const result = await pendingPosterRequest;
-        const found = Object.fromEntries(Object.entries(result).filter(([, path]) => typeof path === 'string' && path.startsWith('/')));
-        const merged = { ...posters, ...found };
+        const found = Object.fromEntries(Object.entries(result).filter(([, movie]) => movie === null || (
+          movie && typeof movie.title === 'string' && Array.isArray(movie.genre_ids)
+        )));
+        const merged = { ...tmdbMovies, ...found };
         if (!active) return;
-        setPosters(merged);
+        setTmdbMovies(merged);
         setLoaded(true);
         try {
-          localStorage.setItem(posterCacheKey, JSON.stringify({ savedAt: Date.now(), posters: merged }));
+          localStorage.setItem(posterCacheKey, JSON.stringify({ savedAt: Date.now(), movies: merged }));
         } catch (cacheError) {
           console.warn('Unable to cache TMDB posters.', cacheError);
         }
@@ -172,7 +188,26 @@ function TmdbPostersProvider({ children }) {
     setRetryCount((count) => count + 1);
   };
 
-  return <TmdbPostersContext.Provider value={{ posters, loading, error, loaded, retry }}>{children}</TmdbPostersContext.Provider>;
+  const movieBySeed = new Map(media.map((seed) => [seed.title, seed]));
+  const catalog = Object.entries(tmdbMovies).flatMap(([seedTitle, movie]) => {
+    const seed = movieBySeed.get(seedTitle);
+    if (!seed || !movie) return [];
+    const releaseYear = movie.release_date?.match(/^\d{4}/)?.[0] || 'TBA';
+    return [{
+      id: movie.id,
+      title: movie.title,
+      genre: movie.genre_ids.map((id) => tmdbGenreNames[id]).filter(Boolean)[0] || 'Other',
+      genres: movie.genre_ids.map((id) => tmdbGenreNames[id]).filter(Boolean),
+      year: releaseYear,
+      rating: Number.isFinite(movie.vote_average) ? movie.vote_average.toFixed(1) : '—',
+      runtime: 'Movie',
+      description: movie.overview || 'No overview is available for this title.',
+      mood: seed.mood,
+      posterPath: movie.poster_path,
+    }];
+  });
+
+  return <TmdbPostersContext.Provider value={{ movies: catalog, loading, error, loaded, retry }}>{children}</TmdbPostersContext.Provider>;
 }
 
 function SetupNotice() {
@@ -197,7 +232,6 @@ function App() {
     <Route path="/watchlist" element={<Protected><WatchlistPage {...browseProps} /></Protected>} />
     <Route path="/title/:slug" element={<Protected><TitlePage {...browseProps} /></Protected>} />
     <Route path="/profile" element={<Protected><Profile /></Protected>} />
-    <Route path="/series/squid-game" element={<Protected><TitlePage {...browseProps} legacySquid /></Protected>} />
     <Route path="*" element={<Navigate to="/" replace />} />
   </Routes></TmdbPostersProvider></AuthProvider>;
 }
@@ -328,20 +362,19 @@ function Header() {
 }
 
 function PosterCard({ item, watchlist = [], toggleWatchlist }) {
-  const { posters } = useContext(TmdbPostersContext);
   const [imageFailed, setImageFailed] = useState(false);
-  const posterPath = imageFailed ? null : posters[item.title];
+  const posterPath = imageFailed ? null : item.posterPath;
   const saved = watchlist.includes(item.title);
   return <article className="poster-card"><Link className={`poster-art art-${item.mood || 'default'} ${posterPath ? 'has-tmdb-poster' : ''}`} to={`/title/${titleSlug(item.title)}`} aria-label={`View ${item.title}`}><span className="art-kicker">{posterPath ? 'TMDB POSTER' : 'SCREENHUB'}</span>{posterPath && <img className="poster-image" src={`https://image.tmdb.org/t/p/w500${posterPath}`} alt={`${item.title} poster`} loading="lazy" decoding="async" onError={() => setImageFailed(true)} />}<strong>{item.title}</strong><span className="art-genre">{item.genre}</span><span className="art-glow" /></Link><div className="poster-info"><Link to={`/title/${titleSlug(item.title)}`} className="poster-title">{item.title}</Link><span>{item.year} <i>·</i> ★ {item.rating}</span></div>{toggleWatchlist && <button type="button" className={`save-title ${saved ? 'saved' : ''}`} aria-label={saved ? `Remove ${item.title} from My list` : `Add ${item.title} to My list`} onClick={() => toggleWatchlist(item.title)}>{saved ? '✓' : '+'}</button>}</article>;
 }
 
 function PosterServiceNotice() {
-  const { posters, loading, error, loaded, retry } = useContext(TmdbPostersContext);
-  const found = Object.values(posters).filter((path) => typeof path === 'string' && path.startsWith('/')).length;
-  if (error) return <div className="poster-service-notice error" role="alert"><span>TMDB posters could not load: {error}</span><button type="button" onClick={retry}>Retry</button></div>;
-  if (loading) return <div className="poster-service-notice" role="status">Loading movie posters from TMDB…</div>;
-  if (found) return <div className="poster-service-notice success" role="status">{found} movie posters loaded from TMDB.</div>;
-  if (loaded) return <div className="poster-service-notice error" role="status">TMDB responded, but no posters were found. Check the function logs and TMDB token.</div>;
+  const { movies, loading, error, loaded, retry } = useContext(TmdbPostersContext);
+  const found = movies.filter((movie) => movie.posterPath).length;
+  if (error) return <div className="poster-service-notice error" role="alert"><span>TMDB movies could not load: {error}</span><button type="button" onClick={retry}>Retry</button></div>;
+  if (loading) return <div className="poster-service-notice" role="status">Verifying catalog titles with TMDB…</div>;
+  if (movies.length) return <div className="poster-service-notice success" role="status">{movies.length} verified TMDB movies · {found} with posters</div>;
+  if (loaded) return <div className="poster-service-notice" role="status">No exact TMDB movie matches were found. Try retrying in a moment.</div>;
   return null;
 }
 
@@ -350,22 +383,25 @@ function MovieRow({ title, items, watchlist, toggleWatchlist, link = '/browse' }
 }
 
 function Home({ watchlist, toggleWatchlist }) {
-  const featured = media[0];
-  return <><Header /><PosterServiceNotice /><main className="home-page"><section className={`featured-hero feature-${featured.mood}`}><div className="hero-grain"/><div className="hero-copy"><div className="eyebrow"><span className="live-dot" /> THE STORY EVERYONE'S TALKING ABOUT</div><div className="hero-label">THIS WEEK’S PREMIERE</div><h1>Predator:<br /><em>Badlands</em></h1><p>{featured.description}</p><div className="hero-meta"><span className="rating-pill">★ {featured.rating}</span><span>{featured.year}</span><span>{featured.genre}</span><span>{featured.runtime}</span></div><div className="hero-actions"><Link className="primary-btn hero-btn" to={`/title/${titleSlug(featured.title)}`}>Discover film <span>→</span></Link><button className="quiet-btn" onClick={() => toggleWatchlist(featured.title)}>{watchlist.includes(featured.title) ? '✓ In my list' : '+ Add to my list'}</button></div></div><div className="hero-index"><span>01</span><i /> 04</div></section>
+  const { movies, loading, error } = useContext(TmdbPostersContext);
+  const featured = movies[0];
+  if (!featured) return <><Header /><PosterServiceNotice /><main className="home-page">{loading ? <p className="empty-state">Loading movies from TMDB…</p> : error ? <p className="empty-state">We couldn’t load TMDB movies. Use Retry above to try again.</p> : <p className="empty-state">No movies from TMDB are available in the catalog yet.</p>}<Footer /></main></>;
+  return <><Header /><PosterServiceNotice /><main className="home-page"><section className={`featured-hero feature-${featured.mood}`}><div className="hero-grain"/><div className="hero-copy"><div className="eyebrow"><span className="live-dot" /> VERIFIED ON TMDB</div><div className="hero-label">FEATURED MOVIE</div><h1>{featured.title}</h1><p>{featured.description}</p><div className="hero-meta"><span className="rating-pill">★ {featured.rating}</span><span>{featured.year}</span><span>{featured.genre}</span></div><div className="hero-actions"><Link className="primary-btn hero-btn" to={`/title/${titleSlug(featured.title)}`}>View movie <span>→</span></Link><button className="quiet-btn" onClick={() => toggleWatchlist(featured.title)}>{watchlist.includes(featured.title) ? '✓ In my list' : '+ Add to my list'}</button></div></div><div className="hero-index"><span>01</span><i /> {movies.length.toString().padStart(2, '0')}</div></section>
     <div className="home-intro"><div><div className="eyebrow">CURATED FOR YOUR NEXT MOVIE NIGHT</div><h2>Find your <em>kind</em> of story.</h2></div><Link className="all-genres-link" to="/browse">Browse all genres <span>→</span></Link></div><div className="genre-shortcuts">{genres.slice(0, 6).map((genre, index) => <Link key={genre} className={`genre-tile genre-tile-${index}`} to={`/genre/${encodeURIComponent(genre.toLowerCase())}`}><span>0{index + 1}</span><strong>{genre}</strong><i>↗</i></Link>)}</div>
-    <MovieRow title="Popular this week" items={media.slice(0, 8)} watchlist={watchlist} toggleWatchlist={toggleWatchlist} /><MovieRow title="Made for the big screen" items={media.filter((item) => ['Adventure', 'Sci-Fi', 'Action'].includes(item.genre)).slice(0, 7)} watchlist={watchlist} toggleWatchlist={toggleWatchlist} /><MovieRow title="Stories after dark" items={media.filter((item) => ['Horror', 'Thriller'].includes(item.genre))} watchlist={watchlist} toggleWatchlist={toggleWatchlist} link="/genre/horror" /><Footer /></main></>;
+    <MovieRow title="Popular this week" items={movies.slice(0, 8)} watchlist={watchlist} toggleWatchlist={toggleWatchlist} /><MovieRow title="Made for the big screen" items={movies.filter((item) => ['Adventure', 'Sci-Fi', 'Action'].includes(item.genre)).slice(0, 7)} watchlist={watchlist} toggleWatchlist={toggleWatchlist} /><MovieRow title="Stories after dark" items={movies.filter((item) => item.genres.some((itemGenre) => ['Horror', 'Thriller'].includes(itemGenre)))} watchlist={watchlist} toggleWatchlist={toggleWatchlist} link="/genre/horror" /><Footer /></main></>;
 }
 
 function PageShell({ eyebrow, title, description, children }) { return <><Header /><PosterServiceNotice /><main className="browse-page"><div className="page-heading"><div className="eyebrow">{eyebrow}</div><h1>{title}</h1><p>{description}</p></div>{children}<Footer /></main></>; }
 
 function Browse({ watchlist, toggleWatchlist }) {
+  const { movies } = useContext(TmdbPostersContext);
   const [genre, setGenre] = useState('All');
   const [query, setQuery] = useState('');
   const [sort, setSort] = useState('popular');
-  const visibleMedia = media
+  const visibleMedia = movies
     .filter((item) => (genre === 'All' || item.genre === genre) && `${item.title} ${item.genre} ${item.description}`.toLowerCase().includes(query.trim().toLowerCase()))
     .slice()
-    .sort((a, b) => sort === 'title' ? a.title.localeCompare(b.title) : sort === 'year' ? b.year - a.year : Number(b.rating) - Number(a.rating));
+    .sort((a, b) => sort === 'title' ? a.title.localeCompare(b.title) : sort === 'year' ? (Number(b.year) || 0) - (Number(a.year) || 0) : Number(b.rating) - Number(a.rating));
   return <PageShell eyebrow="THE SCREENHUB GUIDE" title={<>Find your next<br /><em>favorite story.</em></>} description="Search the collection, filter by genre, then open any title for its details.">
     <section className="catalog-section browse-catalog">
       <div className="browse-controls">
@@ -380,24 +416,25 @@ function Browse({ watchlist, toggleWatchlist }) {
 }
 
 function GenrePage({ watchlist, toggleWatchlist }) {
-  const { genre = '' } = useParams(); const name = genres.find((item) => item.toLowerCase() === decodeURIComponent(genre).toLowerCase()); const items = media.filter((item) => item.genre.toLowerCase() === (name || genre).toLowerCase());
+  const { genre = '' } = useParams(); const { movies } = useContext(TmdbPostersContext); const name = genres.find((item) => item.toLowerCase() === decodeURIComponent(genre).toLowerCase()); const items = movies.filter((item) => item.genres.some((itemGenre) => itemGenre.toLowerCase() === (name || genre).toLowerCase()));
   return <PageShell eyebrow="EXPLORE COLLECTION" title={<>{name || 'Genre'} <em>stories.</em></>} description={`A hand-picked collection of ${name || genre} films for your next movie night.`}><section className="result-grid">{items.length ? items.map((item) => <PosterCard key={item.title} item={item} watchlist={watchlist} toggleWatchlist={toggleWatchlist} />) : <p className="empty-state">This collection is coming soon. Explore all genres to find your next film.</p>}</section><Link className="back-to-browse" to="/browse">← All genres</Link></PageShell>;
 }
 
 function SearchPage({ watchlist, toggleWatchlist }) {
-  const [params, setParams] = useSearchParams(); const query = params.get('q') || ''; const matches = media.filter((item) => `${item.title} ${item.genre} ${item.description}`.toLowerCase().includes(query.trim().toLowerCase()));
+  const { movies } = useContext(TmdbPostersContext); const [params, setParams] = useSearchParams(); const query = params.get('q') || ''; const matches = movies.filter((item) => `${item.title} ${item.genres.join(' ')} ${item.description}`.toLowerCase().includes(query.trim().toLowerCase()));
   return <PageShell eyebrow="SEARCH THE COLLECTION" title={query ? <>Results for <em>“{query}”</em></> : <>What are you <em>in the mood for?</em></>} description={query ? `${matches.length} ${matches.length === 1 ? 'story' : 'stories'} found in the ScreenHub collection.` : 'Search for a title, genre, or feeling.'}><form className="large-search" onSubmit={(event) => event.preventDefault()}><span>⌕</span><input autoFocus aria-label="Search the collection" placeholder="Try “space”, “animation”, or a title..." value={query} onChange={(event) => setParams(event.target.value ? { q: event.target.value } : {})} /><button type="button" onClick={() => setParams({})}>Clear</button></form>{query && <section className="result-grid">{matches.length ? matches.map((item) => <PosterCard key={item.title} item={item} watchlist={watchlist} toggleWatchlist={toggleWatchlist} />) : <p className="empty-state">No titles match that search yet. Try a genre, like “Sci-Fi” or “Horror”.</p>}</section>}{!query && <div className="search-genres"><span>POPULAR GENRES</span>{genres.slice(0, 6).map((genre) => <Link key={genre} to={`/genre/${genre.toLowerCase()}`}>{genre} <b>↗</b></Link>)}</div>}</PageShell>;
 }
 
 function WatchlistPage({ watchlist, toggleWatchlist }) {
-  const items = media.filter((item) => watchlist.includes(item.title));
+  const { movies } = useContext(TmdbPostersContext);
+  const items = movies.filter((item) => watchlist.includes(item.title));
   return <PageShell eyebrow="SAVED FOR LATER" title={<>Your personal <em>collection.</em></>} description="Every good story you want to come back to, all in one place."><section className="result-grid">{items.length ? items.map((item) => <PosterCard key={item.title} item={item} watchlist={watchlist} toggleWatchlist={toggleWatchlist} />) : <div className="watchlist-empty"><span>＋</span><h2>Your list starts here.</h2><p>Save films as you explore and they’ll be waiting for you here.</p><Link className="primary-btn" to="/browse">Explore the collection</Link></div>}</section></PageShell>;
 }
 
-function TitlePage({ watchlist, toggleWatchlist, legacySquid = false }) {
-  const { slug = '' } = useParams(); const item = legacySquid ? { title: 'Squid Game', genre: 'Thriller', year: 2021, rating: '8.0', runtime: '1 season', mood: 'squid', description: 'Hundreds of cash-strapped players accept a strange invitation to compete in children’s games for a tempting prize. One by one, the stakes turn deadly.' } : media.find((entry) => titleSlug(entry.title) === slug); const saved = item && watchlist.includes(item.title); const { posters } = useContext(TmdbPostersContext); const [imageFailed, setImageFailed] = useState(false); const posterPath = item && !imageFailed && posters[item.title];
+function TitlePage({ watchlist, toggleWatchlist }) {
+  const { slug = '' } = useParams(); const { movies } = useContext(TmdbPostersContext); const item = movies.find((entry) => titleSlug(entry.title) === slug); const saved = item && watchlist.includes(item.title); const [imageFailed, setImageFailed] = useState(false); const posterPath = item && !imageFailed && item.posterPath;
   if (!item) return <PageShell eyebrow="SCREENHUB" title="Story not found." description="That title isn’t in our collection yet."><Link to="/browse">Explore the collection →</Link></PageShell>;
-  return <><Header /><main className="title-page"><Link to="/browse" className="back-link detail-back">← Back to discover</Link><section className="title-detail-hero"><div className={`detail-poster art-${item.mood || 'default'} ${posterPath ? 'has-tmdb-poster' : ''}`}>{posterPath && <img src={`https://image.tmdb.org/t/p/w500${posterPath}`} alt={`${item.title} poster`} onError={() => setImageFailed(true)} />}<span>{item.title}</span></div><div className="title-copy"><div className="eyebrow">MOVIE DETAILS</div><h1>{item.title}</h1><div className="detail-tags"><span>{item.year}</span><span>{item.genre}</span><span>{item.runtime}</span><span className="rating-pill">★ {item.rating}</span></div><p>{item.description}</p><div className="hero-actions"><a className="primary-btn" href={`https://www.youtube.com/results?search_query=${encodeURIComponent(`${item.title} official trailer`)}`} target="_blank" rel="noreferrer">▶ Find trailer</a><button className="quiet-btn" onClick={() => toggleWatchlist(item.title)}>{saved ? '✓ Saved to my list' : '+ Add to my list'}</button></div></div></section><section className="title-details"><div><span>ABOUT THIS TITLE</span><h2>A story worth settling in for.</h2><p>{item.description}</p></div><Link className="detail-genre" to={`/genre/${encodeURIComponent(item.genre.toLowerCase())}`}>More {item.genre} films <b>Explore collection →</b></Link></section><MovieRow title="You may also like" items={media.filter((other) => other.title !== item.title && other.genre === item.genre).slice(0, 6)} watchlist={watchlist} toggleWatchlist={toggleWatchlist} /><Footer /></main></>;
+  return <><Header /><main className="title-page"><Link to="/browse" className="back-link detail-back">← Back to discover</Link><section className="title-detail-hero"><div className={`detail-poster art-${item.mood || 'default'} ${posterPath ? 'has-tmdb-poster' : ''}`}>{posterPath && <img src={`https://image.tmdb.org/t/p/w500${posterPath}`} alt={`${item.title} poster`} onError={() => setImageFailed(true)} />}<span>{item.title}</span></div><div className="title-copy"><div className="eyebrow">TMDB MOVIE</div><h1>{item.title}</h1><div className="detail-tags"><span>{item.year}</span><span>{item.genre}</span><span>Movie</span><span className="rating-pill">★ {item.rating}</span></div><p>{item.description}</p><div className="hero-actions"><a className="primary-btn" href={`https://www.youtube.com/results?search_query=${encodeURIComponent(`${item.title} official trailer`)}`} target="_blank" rel="noreferrer">▶ Find trailer</a><button className="quiet-btn" onClick={() => toggleWatchlist(item.title)}>{saved ? '✓ Saved to my list' : '+ Add to my list'}</button></div></div></section><section className="title-details"><div><span>ABOUT THIS TITLE</span><h2>A story worth settling in for.</h2><p>{item.description}</p></div><Link className="detail-genre" to={`/genre/${encodeURIComponent(item.genre.toLowerCase())}`}>More {item.genre} films <b>Explore collection →</b></Link></section><MovieRow title="You may also like" items={movies.filter((other) => other.id !== item.id && other.genres.some((itemGenre) => item.genres.includes(itemGenre))).slice(0, 6)} watchlist={watchlist} toggleWatchlist={toggleWatchlist} /><Footer /></main></>;
 }
 
 function Footer() { return <><div className="tmdb-attribution"><a href="https://www.themoviedb.org/" target="_blank" rel="noreferrer"><img src="https://www.themoviedb.org/assets/2/v4/logos/stacked-green.svg" alt="The Movie Database (TMDB)" /></a><p>This application uses TMDB and the TMDB APIs but is not endorsed, certified, or otherwise approved by TMDB.</p></div><footer className="site-footer"><Link className="wordmark" to="/home">SCREEN<span>HUB</span></Link><span>Good stories bring us together.</span><Link to="/profile">Your account ↗</Link></footer></>; }
