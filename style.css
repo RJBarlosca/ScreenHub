@@ -1,0 +1,259 @@
+/* =========================================
+   SCREENHUB GLOBAL STYLES
+   ========================================= */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: 'Inter', sans-serif;
+}
+
+body.screenhub-auth {
+    min-height: 100vh;
+    background: #000;
+    color: #fff;
+    overflow-x: hidden;
+}
+
+.screenhub-bg {
+    position: fixed;
+    inset: 0;
+    background: linear-gradient(to bottom, rgba(0,0,0,0.6), rgba(0,0,0,0.9)),
+                url("77786064-826b-4da0-9269-a6c1b85797bb.png");
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+    z-index: -1;
+}
+
+.screenhub-wrapper {
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-direction: column;
+    padding: 40px 20px;
+}
+
+.screenhub-logo {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 64px;
+    letter-spacing: 4px;
+    color: #e50914;
+    margin-bottom: 20px;
+    text-shadow: 0 0 20px rgba(229, 9, 20, 0.4);
+}
+
+.screenhub-card {
+    width: 450px;
+    max-width: 100%;
+    background: rgba(0, 0, 0, 0.85);
+    backdrop-filter: blur(25px);
+    border-radius: 12px;
+    padding: 50px 45px;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+}
+
+.screenhub-card h2 {
+    margin-bottom: 30px;
+    font-size: 32px;
+    font-weight: 700;
+}
+
+/* =========================================
+   FLOATING LABEL & ICON CENTERING
+   ========================================= */
+.screenhub-field {
+    position: relative;
+    margin-bottom: 20px;
+}
+
+.screenhub-field input {
+    width: 100%;
+    padding: 24px 20px 10px;
+    background: #333;
+    border: none;
+    border-bottom: 2px solid transparent;
+    border-radius: 4px;
+    color: #fff;
+    font-size: 16px;
+    outline: none;
+    transition: background 0.2s, border-color 0.2s;
+}
+
+.screenhub-field input:focus {
+    background: #454545;
+    border-bottom-color: #e50914;
+}
+
+.screenhub-field label {
+    position: absolute;
+    left: 20px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: #8c8c8c;
+    pointer-events: none;
+    transition: all 0.2s ease;
+}
+
+.screenhub-field input:focus + label,
+.screenhub-field input:not(:placeholder-shown) + label {
+    top: 14px;
+    font-size: 12px;
+    font-weight: 700;
+    color: #e50914;
+}
+
+/* Eye Icon Fix */
+.password-field {
+    position: relative;
+}
+
+.toggle-eye {
+    position: absolute;
+    right: 20px;
+    top: 50%;
+    transform: translateY(-50%);
+    cursor: pointer;
+    color: #8c8c8c;
+    font-size: 18px;
+    z-index: 5;
+    transition: color 0.2s;
+    line-height: 0; /* Ensures the icon doesn't push container height */
+}
+
+.toggle-eye:hover {
+    color: #e50914;
+}
+
+/* Strength Meter */
+.password-strength { margin: -10px 0 20px; }
+.strength-bars { display: flex; gap: 4px; }
+.strength-bars span { height: 4px; flex: 1; background: #222; border-radius: 2px; }
+.password-strength.weak span:nth-child(1) { background: #e50914; }
+.password-strength.medium span:nth-child(1), .password-strength.medium span:nth-child(2) { background: #f39c12; }
+.password-strength.strong span { background: #2ecc71; }
+#strength-text { font-size: 11px; color: #8c8c8c; margin-top: 6px; display: block; }
+
+/* Buttons & Links */
+.screenhub-btn {
+    width: 100%;
+    padding: 16px;
+    background: #e50914;
+    color: #fff;
+    border: none;
+    border-radius: 4px;
+    font-size: 16px;
+    font-weight: 700;
+    cursor: pointer;
+    margin-top: 10px;
+}
+
+.screenhub-btn:hover { background: #c10712; }
+
+.screenhub-link { margin-top: 25px; color: #737373; text-align: center; }
+.screenhub-link a { color: #fff; text-decoration: none; font-weight: 600; }
+
+/* Forgot Password Styles */
+.forgot-password-container {
+  margin-top: 15px;
+  display: none;
+  animation: slideDown 0.3s ease;
+}
+
+@keyframes slideDown {
+  from { opacity: 0; transform: translateY(-10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.forgot-link {
+  color: #8c8c8c;
+  text-align: center;
+  margin-top: 20px;
+  cursor: pointer;
+  font-size: 14px;
+  transition: color 0.2s;
+}
+
+.forgot-link:hover {
+  color: #e50914;
+}
+
+.forgot-email-field {
+  margin-top: 15px;
+}
+
+.forgot-btn {
+  width: 100%;
+  padding: 12px;
+  background: #666;
+  color: #fff;
+  border: none;
+  border-radius: 4px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  margin-top: 10px;
+  transition: background 0.2s;
+}
+
+.forgot-btn:hover:not(:disabled) {
+  background: #888;
+}
+
+.forgot-btn:disabled {
+  background: #444;
+  cursor: not-allowed;
+}
+
+.forgot-status {
+  margin-top: 15px;
+  padding: 12px;
+  border-radius: 6px;
+  font-size: 14px;
+  text-align: center;
+  display: none;
+}
+
+.forgot-success {
+  background: rgba(46, 204, 113, 0.2);
+  color: #2ecc71;
+  border: 1px solid rgba(46, 204, 113, 0.4);
+}
+
+.forgot-error {
+  background: rgba(231, 76, 60, 0.2);
+  color: #e74c3c;
+  border: 1px solid rgba(231, 76, 60, 0.4);
+}
+
+.resend-section {
+  margin-top: 10px;
+  text-align: center;
+  font-size: 14px;
+  color: #8c8c8c;
+}
+
+.resend-btn {
+  background: transparent;
+  color: #e50914;
+  border: none;
+  font-size: 14px;
+  cursor: pointer;
+  text-decoration: underline;
+  padding: 0;
+  margin-top: 5px;
+}
+
+.resend-btn:hover {
+  color: #ff4053;
+}
+
+.resend-btn:disabled {
+  color: #444;
+  cursor: not-allowed;
+}
+
+
+
