@@ -1,0 +1,4 @@
+project_id = "screenhub"
+
+[functions.tmdb-posters]
+verify_jwt = true
