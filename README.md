@@ -1,6 +1,6 @@
 # ScreenHub (React + Vite + Supabase)
 
-The active frontend is now a React single-page app. Supabase Auth handles sign-in, registration, and password resets. Usernames and profile details live in the Supabase `profiles` table with row-level security enabled.
+ScreenHub is a React single-page app built with Vite. Supabase Auth handles sign-in, registration, and password resets. Usernames and profile details live in the Supabase `profiles` table with row-level security enabled.
 
 ## Start locally
 
@@ -12,8 +12,8 @@ The active frontend is now a React single-page app. Supabase Auth handles sign-i
 
 For email confirmation and password reset links, add your local Vite address (usually `http://localhost:5173`) to **Authentication → URL Configuration → Redirect URLs** in Supabase.
 
-## Existing MySQL accounts
+## Existing accounts
 
-The old PHP/MySQL pages remain in the repository as legacy files, but Vite serves the React app through `index.html`. Passwords from the old MySQL table cannot be copied into Supabase Auth as working accounts; users need to register again or use a separately planned account migration.
+Passwords from the former MySQL database cannot be copied into Supabase Auth as working accounts; existing users need to register again or use a separately planned account migration.
 
 The existing movie posters and avatar images are served from `public/`. The app's movie catalog is sample frontend data; it is not a streaming service or a Supabase-backed catalog yet.
