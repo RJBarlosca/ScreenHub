@@ -38,21 +38,21 @@ function AuthProvider({ children }) {
 }
 
 const media = [
-  { title: 'Toy Story 5', image: '/toy_story_five.jpg', genre: 'Animation' },
-  { title: 'Captain America: Brave New World', image: '/captain_america_brave_new_world.jpg', genre: 'Action' },
-  { title: 'Thunderbolts*', image: '/thunderbolts.jpg', genre: 'Action' },
-  { title: 'Ballerina', image: '/ballerina.jpg', genre: 'Action' },
-  { title: 'Avengers: Doomsday', image: '/avengers_doomsday.jpg', genre: 'Action' },
-  { title: 'The Conjuring: Last Rites', image: '/conjuring_last_rites.jpg', genre: 'Horror' },
-  { title: 'Smile 2', image: '/smile_two.jpg', genre: 'Horror' },
-  { title: 'Scream 7', image: '/scream_seven.jpg', genre: 'Horror' },
-  { title: 'The Running Man', image: '/running_man.jpg', genre: 'Action' },
-  { title: 'Wicked', image: '/wicked_ver2.jpg', genre: 'Drama' },
-  { title: 'Sinister', image: '/sinister.jpg', genre: 'Horror' },
-  { title: 'It', image: '/it.jpg', genre: 'Horror' },
-  { title: 'John Wick', image: '/john_wick.jpg', genre: 'Action' },
-  { title: 'Deliver Us from Evil', image: '/deliver_us_from_evil.jpg', genre: 'Horror' },
-  { title: 'The Shining', image: '/shining_ver2.jpg', genre: 'Horror' },
+  { title: 'Toy Story 5', genre: 'Animation' },
+  { title: 'Captain America: Brave New World', genre: 'Action' },
+  { title: 'Thunderbolts*', genre: 'Action' },
+  { title: 'Ballerina', genre: 'Action' },
+  { title: 'Avengers: Doomsday', genre: 'Action' },
+  { title: 'The Conjuring: Last Rites', genre: 'Horror' },
+  { title: 'Smile 2', genre: 'Horror' },
+  { title: 'Scream 7', genre: 'Horror' },
+  { title: 'The Running Man', genre: 'Action' },
+  { title: 'Wicked', genre: 'Drama' },
+  { title: 'Sinister', genre: 'Horror' },
+  { title: 'It', genre: 'Horror' },
+  { title: 'John Wick', genre: 'Action' },
+  { title: 'Deliver Us from Evil', genre: 'Horror' },
+  { title: 'The Shining', genre: 'Horror' },
 ];
 
 function SetupNotice() {
@@ -176,13 +176,13 @@ function Header() {
   return <header className="site-header"><Link className="wordmark" to="/home">SCREENHUB</Link><nav><Link to="/home">Home</Link><a href="#catalog">Movies &amp; series</a></nav><div className="header-user"><button className="avatar" onClick={() => setMenu(!menu)} aria-label="Open account menu">{initials}</button>{menu && <div className="account-menu"><b>{[profile?.first_name, profile?.last_name].filter(Boolean).join(' ') || 'Your account'}</b><span>@{profile?.username}</span><Link to="/profile" onClick={() => setMenu(false)}>Edit profile</Link><button onClick={signOut}>Sign out</button></div>}</div></header>;
 }
 
-function PosterRow({ title, items }) { return <section className="catalog-section" id="catalog"><div className="section-heading"><h2>{title}</h2><span>Explore all</span></div><div className="poster-row">{items.map((item) => <Link className="poster-card" to={item.title === 'Squid Game' ? '/series/squid-game' : '/home'} key={item.title}><img src={item.image} alt={item.title} /><span>{item.title}</span></Link>)}</div></section>; }
+function PosterRow({ title, items }) { return <section className="catalog-section" id="catalog"><div className="section-heading"><h2>{title}</h2><span>Explore all</span></div><div className="poster-row">{items.map((item) => <Link className="poster-card" to={item.title === 'Squid Game' ? '/series/squid-game' : '/home'} key={item.title}><div className="poster-placeholder" aria-label={`${item.title} poster placeholder`}><span>{item.title}</span></div><span>{item.title}</span></Link>)}</div></section>; }
 
 function Home() {
   const [query, setQuery] = useState(''); const [genre, setGenre] = useState('All');
   const filtered = media.filter((item) => item.title.toLowerCase().includes(query.toLowerCase()) && (genre === 'All' || item.genre === genre));
-  const popular = [{ title: 'Squid Game', image: 'https://static.wikia.nocookie.net/thesquidgame/images/7/7d/GdWDj4ZaoAEgw26.jpg/revision/latest?cb=20241214072040' }, ...media.slice(2, 9)];
-  return <><Header /><main className="home-page"><section className="featured-hero"><img src="/predator_badlands_ver5.jpg" alt="Predator: Badlands" /><div className="hero-shade"/><div className="hero-copy"><div className="eyebrow">✦ &nbsp;FEATURED TONIGHT</div><h1>Predator:<br />Badlands</h1><p>Banished from his group, a young Predator forms an unexpected partnership with a human survivor deep in the dangerous Badlands.</p><div className="hero-meta"><span>IMDb 7.3</span><span>2025</span><span>Action · Sci-Fi</span><span>1h 52m</span></div><a className="primary-btn hero-btn" href="#catalog">Explore titles <span>→</span></a></div></section>
+  const popular = [{ title: 'Squid Game', genre: 'Drama' }, ...media.slice(2, 9)];
+  return <><Header /><main className="home-page"><section className="featured-hero"><div className="hero-shade"/><div className="hero-copy"><div className="eyebrow">✦ &nbsp;FEATURED TONIGHT</div><h1>Predator:<br />Badlands</h1><p>Banished from his group, a young Predator forms an unexpected partnership with a human survivor deep in the dangerous Badlands.</p><div className="hero-meta"><span>IMDb 7.3</span><span>2025</span><span>Action · Sci-Fi</span><span>1h 52m</span></div><a className="primary-btn hero-btn" href="#catalog">Explore titles <span>→</span></a></div></section>
     <div className="discover-tools"><div className="genre-tabs">{['All', 'Action', 'Horror', 'Drama', 'Animation'].map((item) => <button key={item} className={genre === item ? 'selected' : ''} onClick={() => setGenre(item)}>{item}</button>)}</div><label className="search"><span>⌕</span><input placeholder="Search titles" value={query} onChange={(event) => setQuery(event.target.value)} /></label></div>
     {filtered.length ? <PosterRow title={query || genre !== 'All' ? 'Search results' : 'Trending movies'} items={filtered} /> : <p className="empty-state">No titles match that search.</p>}
     <PosterRow title="Popular series" items={popular} />
@@ -205,7 +205,7 @@ function Profile() {
 }
 
 function Series() {
-  return <><Header /><main className="series-page"><div className="series-hero"><img src="https://static.wikia.nocookie.net/thesquidgame/images/7/7d/GdWDj4ZaoAEgw26.jpg/revision/latest?cb=20241214072040" alt="Squid Game" /><div className="hero-shade" /><div className="series-copy"><div className="eyebrow">#1 ON SCREENHUB</div><h1>SQUID<br />GAME</h1><p>2021 – 2024　·　TV-MA　·　Thriller · Drama · Mystery</p><p>456 cash-strapped players accept a mysterious invitation to compete in deadly children's games for a life-changing prize.</p><a className="primary-btn hero-btn" href="https://www.youtube.com/results?search_query=Squid+Game+official+trailer" target="_blank" rel="noreferrer">▶ &nbsp;Play trailer</a></div></div><section className="catalog-section"><div className="section-heading"><h2>More to discover</h2><Link to="/home">Browse all</Link></div><div className="poster-row">{media.slice(0, 6).map((item) => <div className="poster-card" key={item.title}><img src={item.image} alt={item.title} /><span>{item.title}</span></div>)}</div></section></main></>;
+  return <><Header /><main className="series-page"><div className="series-hero"><div className="hero-shade" /><div className="series-copy"><div className="eyebrow">#1 ON SCREENHUB</div><h1>SQUID<br />GAME</h1><p>2021 – 2024　·　TV-MA　·　Thriller · Drama · Mystery</p><p>456 cash-strapped players accept a mysterious invitation to compete in deadly children's games for a life-changing prize.</p><a className="primary-btn hero-btn" href="https://www.youtube.com/results?search_query=Squid+Game+official+trailer" target="_blank" rel="noreferrer">▶ &nbsp;Play trailer</a></div></div><section className="catalog-section"><div className="section-heading"><h2>More to discover</h2><Link to="/home">Browse all</Link></div><div className="poster-row">{media.slice(0, 6).map((item) => <div className="poster-card" key={item.title}><div className="poster-placeholder"><span>{item.title}</span></div><span>{item.title}</span></div>)}</div></section></main></>;
 }
 
 export default App;
