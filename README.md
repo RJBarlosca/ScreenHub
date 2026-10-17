@@ -12,16 +12,11 @@ ScreenHub is a React single-page app built with Vite. Supabase Auth handles sign
 
 For email confirmation and password reset links, add your local Vite address (usually `http://localhost:5173`) to **Authentication → URL Configuration → Redirect URLs** in Supabase.
 
-## TMDB movie posters
+## Free full movies
 
-ScreenHub verifies its curated movie titles against TMDB before displaying them and features a swipeable selection from TMDB's globally trending movies of the week. Displayed trending details, genres, release years, ratings, overviews, posters, and backdrops come from TMDB; movies that do not exactly match a TMDB movie result are omitted. To enable it:
+ScreenHub lists free-to-watch open films from the Blender Foundation. This initial collection is primarily complete animated short films (about 3–15 minutes), not feature-length studio movies. The Supabase `tmdb-posters` Edge Function verifies each Internet Archive item before displaying it: the creator must match, its recorded license must match the curated catalog entry, and a playable MP4 file must be present. Movie pages play the complete film through Internet Archive's embedded player; ScreenHub does not host the video files.
 
-1. Create an API Read Access Token in [TMDB API settings](https://www.themoviedb.org/settings/api).
-2. In your Supabase dashboard, open **Edge Functions → Secrets** and add `TMDB_API_READ_ACCESS_TOKEN` with that token as its value. Do not put the token in a `VITE_` variable or browser code.
-3. From this project folder, deploy the proxy with `npx supabase functions deploy tmdb-posters --project-ref YOUR_PROJECT_REF`. The deployed function uses Supabase JWT verification and calls TMDB without exposing the token to the browser.
-4. Sign in to ScreenHub. Successfully resolved TMDB movie records are cached in the browser for up to 7 days.
-
-Movie pages can play official trailers and show legal streaming, rental, or purchase availability for the Philippines through TMDB's watch-provider data. ScreenHub does not host or stream full movies; viewers continue to the listed availability page. The app includes a text link to TMDB and its required attribution in the footer. Review [TMDB's API terms](https://www.themoviedb.org/api-terms-of-use) before use; commercial use requires a separate written agreement with TMDB.
+The open-film catalog uses public-domain or Creative Commons licensed works. Each film page credits the creator and links to its license and source item. To deploy the catalog function, run `npx supabase functions deploy tmdb-posters --project-ref YOUR_PROJECT_REF` from this folder. Free movie catalog records are cached in the browser for up to 12 hours.
 
 ## Existing accounts
 

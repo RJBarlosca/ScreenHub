@@ -21,6 +21,94 @@ type MovieSearchResult = {
 type MovieVideo = { key: string; site: string; type: string; official: boolean; published_at?: string };
 type TrendingRequest = { action?: string; titles?: unknown };
 type WatchOptionsRequest = TrendingRequest & { movie_id?: unknown; country?: unknown };
+type OpenMovie = {
+  identifier: string;
+  title: string;
+  year: number;
+  runtime: string;
+  genre: string;
+  genres: string[];
+  description: string;
+  creator: string;
+  license_url: string;
+  license_name: string;
+  embed_url?: string;
+};
+
+const openMovies: OpenMovie[] = [
+  {
+    identifier: 'BigBuckBunnyFULLHD60FPS',
+    title: 'Big Buck Bunny',
+    year: 2008,
+    runtime: '10 min',
+    genre: 'Animation',
+    genres: ['Animation', 'Comedy', 'Adventure'],
+    description: 'A giant rabbit enjoys a peaceful day in the meadow until three troublemaking rodents ruin it.',
+    creator: 'Blender Foundation',
+    license_url: 'https://creativecommons.org/licenses/by/3.0/',
+    license_name: 'Creative Commons Attribution 3.0',
+  },
+  {
+    identifier: 'sintel_20260427',
+    title: 'Sintel',
+    year: 2010,
+    runtime: '15 min',
+    genre: 'Fantasy',
+    genres: ['Animation', 'Fantasy', 'Adventure'],
+    description: 'A young woman sets out on a dangerous journey to find the dragon she raised as a child.',
+    creator: 'Blender Foundation',
+    license_url: 'https://creativecommons.org/licenses/by/3.0/',
+    license_name: 'Creative Commons Attribution 3.0',
+  },
+  {
+    identifier: 'CosmosLaundromatFirstCycle',
+    title: 'Cosmos Laundromat: First Cycle',
+    year: 2015,
+    runtime: '12 min',
+    genre: 'Fantasy',
+    genres: ['Animation', 'Fantasy', 'Comedy'],
+    description: 'On a desolate island, a sheep meets a strange salesman who promises a new beginning.',
+    creator: 'Blender Foundation',
+    license_url: 'https://creativecommons.org/licenses/by/4.0/',
+    license_name: 'Creative Commons Attribution 4.0',
+  },
+  {
+    identifier: 'ElephantsDream_628',
+    title: 'Elephants Dream',
+    year: 2006,
+    runtime: '11 min',
+    genre: 'Sci-Fi',
+    genres: ['Animation', 'Sci-Fi', 'Drama'],
+    description: 'Two travelers explore a surreal machine-world and discover how differently they see it.',
+    creator: 'Blender Foundation',
+    license_url: 'https://creativecommons.org/licenses/by/3.0/us/',
+    license_name: 'Creative Commons Attribution 3.0 US',
+  },
+  {
+    identifier: 'CaminandesLlamigos',
+    title: 'Caminandes 3: Llamigos',
+    year: 2016,
+    runtime: '3 min',
+    genre: 'Animation',
+    genres: ['Animation', 'Comedy', 'Adventure'],
+    description: 'Llama Koro and a penguin cross paths on the Patagonian plains.',
+    creator: 'Blender Foundation',
+    license_url: 'https://creativecommons.org/licenses/by/3.0/',
+    license_name: 'Creative Commons Attribution 3.0',
+  },
+  {
+    identifier: 'spring_blenderopenmovie',
+    title: 'Spring',
+    year: 2019,
+    runtime: '8 min',
+    genre: 'Fantasy',
+    genres: ['Animation', 'Fantasy', 'Adventure'],
+    description: 'A shepherd girl and her dog encounter ancient spirits in a forest valley.',
+    creator: 'Blender Foundation',
+    license_url: 'https://creativecommons.org/publicdomain/mark/1.0/',
+    license_name: 'Creative Commons Public Domain Mark 1.0',
+  },
+];
 
 function jsonResponse(body: unknown, status = 200) {
   return new Response(JSON.stringify(body), { status, headers: corsHeaders });
@@ -34,15 +122,65 @@ Deno.serve(async (request) => {
   if (request.method === 'OPTIONS') return new Response('ok', { headers: corsHeaders });
   if (request.method !== 'POST') return jsonResponse({ error: 'Method not allowed.' }, 405);
 
-  const token = Deno.env.get('TMDB_API_READ_ACCESS_TOKEN');
-  if (!token) return jsonResponse({ error: 'TMDB_API_READ_ACCESS_TOKEN is not configured for this Edge Function.' }, 500);
-
   let payload: WatchOptionsRequest;
   try {
     payload = await request.json();
   } catch {
     return jsonResponse({ error: 'Request body must be valid JSON.' }, 400);
   }
+
+  if (payload?.action === 'free-movies') {
+    const verifiedMovies: OpenMovie[] = [];
+    let nextIndex = 0;
+    const verifyNext = async () => {
+      while (nextIndex < openMovies.length) {
+        const movie = openMovies[nextIndex++];
+        try {
+          const response = await fetch(`https://archive.org/metadata/${encodeURIComponent(movie.identifier)}`, {
+            signal: AbortSignal.timeout(12000),
+          });
+          if (!response.ok) {
+            console.warn(`Internet Archive returned HTTP ${response.status} for ${movie.identifier}.`);
+            continue;
+          }
+          const metadata = await response.json();
+          const sourceCreator = Array.isArray(metadata.metadata?.creator)
+            ? metadata.metadata.creator.join(' ')
+            : metadata.metadata?.creator;
+          const sourceLicense = typeof metadata.metadata?.licenseurl === 'string'
+            ? metadata.metadata.licenseurl.replace(/^http:/, 'https:').replace(/\/$/, '')
+            : '';
+          const expectedLicense = movie.license_url.replace(/\/$/, '');
+          const hasPlayableVideo = Array.isArray(metadata.files) && metadata.files.some((file: { name?: unknown; format?: unknown }) =>
+            typeof file.name === 'string' &&
+            /\.mp4$/i.test(file.name) &&
+            typeof file.format === 'string' &&
+            /mpeg4|h\.264/i.test(file.format)
+          );
+          if (
+            typeof sourceCreator !== 'string' ||
+            !sourceCreator.toLowerCase().includes('blender foundation') ||
+            sourceLicense !== expectedLicense ||
+            !hasPlayableVideo
+          ) {
+            console.warn(`Internet Archive license or playable video verification failed for ${movie.identifier}.`);
+            continue;
+          }
+          verifiedMovies.push({ ...movie, embed_url: `https://archive.org/embed/${encodeURIComponent(movie.identifier)}` });
+        } catch (error) {
+          console.warn(`Unable to verify free movie ${movie.identifier} with Internet Archive.`, error);
+        }
+      }
+    };
+    await Promise.all(Array.from({ length: Math.min(4, openMovies.length) }, verifyNext));
+    if (!verifiedMovies.length) {
+      return jsonResponse({ error: 'No movies could be verified with a free-play license and playable video. Please retry shortly.' }, 502);
+    }
+    return jsonResponse({ movies: verifiedMovies });
+  }
+
+  const token = Deno.env.get('TMDB_API_READ_ACCESS_TOKEN');
+  if (!token) return jsonResponse({ error: 'TMDB_API_READ_ACCESS_TOKEN is not configured for this Edge Function.' }, 500);
 
   if (payload?.action === 'trending') {
     const trendingUrl = new URL('https://api.themoviedb.org/3/trending/movie/week');

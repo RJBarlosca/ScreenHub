@@ -37,107 +37,77 @@ function AuthProvider({ children }) {
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 }
 
-const media = [
-  { title: 'Predator: Badlands', genre: 'Sci-Fi', year: 2025, rating: '7.3', runtime: '1h 47m', mood: 'predator', description: 'Cast out on a dangerous world, a young hunter finds an unlikely ally and fights to survive the ultimate proving ground.' },
-  { title: 'Dune: Part Two', genre: 'Adventure', year: 2024, rating: '8.5', runtime: '2h 46m', mood: 'dune', description: 'Paul Atreides unites with Chani and the Fremen on a journey of revenge and destiny across Arrakis.' },
-  { title: 'The Batman', genre: 'Action', year: 2022, rating: '7.8', runtime: '2h 56m', mood: 'batman', description: 'A relentless detective follows a trail of clues through Gotham’s darkest corners.' },
-  { title: 'Interstellar', genre: 'Sci-Fi', year: 2014, rating: '8.7', runtime: '2h 49m', mood: 'interstellar', description: 'A team of explorers travels beyond this galaxy to discover whether mankind has a future among the stars.' },
-  { title: 'John Wick', genre: 'Action', year: 2014, rating: '7.4', runtime: '1h 41m', mood: 'wick', description: 'A retired hitman returns to the underworld and becomes a legend in his own right.' },
-  { title: 'Wicked', genre: 'Fantasy', year: 2024, rating: '7.5', runtime: '2h 40m', mood: 'wicked', description: 'Two unlikely friends discover that their differences may change the future of Oz.' },
-  { title: 'The Shining', genre: 'Horror', year: 1980, rating: '8.4', runtime: '2h 26m', mood: 'shining', description: 'A winter at an isolated hotel takes a terrifying turn for a family of three.' },
-  { title: 'Spider-Man: Across the Spider-Verse', genre: 'Animation', year: 2023, rating: '8.6', runtime: '2h 20m', mood: 'spiderverse', description: 'Miles Morales swings across the multiverse and meets a team of Spider-People protecting its very existence.' },
-  { title: 'The Grand Budapest Hotel', genre: 'Comedy', year: 2014, rating: '8.1', runtime: '1h 39m', mood: 'budapest', description: 'A legendary concierge and his protégé become wrapped up in a glamorous European mystery.' },
-  { title: 'The Conjuring: Last Rites', genre: 'Horror', year: 2025, rating: '6.8', runtime: '2h 15m', mood: 'conjuring', description: 'The Warrens face one final case that brings the darkest parts of their past back to light.' },
-  { title: 'La La Land', genre: 'Romance', year: 2016, rating: '8.0', runtime: '2h 8m', mood: 'lalaland', description: 'A jazz musician and an aspiring actor fall in love while pursuing their dreams in Los Angeles.' },
-  { title: 'Oppenheimer', genre: 'Drama', year: 2023, rating: '8.3', runtime: '3h', mood: 'oppenheimer', description: 'A brilliant physicist faces the world-changing consequences of the secret project he helped create.' },
-  { title: 'Whiplash', genre: 'Drama', year: 2014, rating: '8.5', runtime: '1h 46m', mood: 'whiplash', description: 'An ambitious young drummer pushes himself to the limit under the eye of a demanding instructor.' },
-  { title: 'Captain America: Brave New World', genre: 'Action', year: 2025, rating: '5.7', runtime: '1h 58m', mood: 'captain', description: 'Sam Wilson steps into a new role and faces a conspiracy with global consequences.' },
-  { title: 'Toy Story 5', genre: 'Animation', year: 2026, rating: '—', runtime: 'Coming soon', mood: 'toystory', description: 'Woody, Buzz and the gang return for a brand-new adventure.' },
-  { title: 'Smile 2', genre: 'Horror', year: 2024, rating: '6.8', runtime: '2h 7m', mood: 'smile', description: 'A pop star’s world tour becomes a nightmare as an old terror follows her into the spotlight.' },
-  { title: 'The Martian', genre: 'Sci-Fi', year: 2015, rating: '8.0', runtime: '2h 24m', mood: 'martian', description: 'Stranded on Mars, one astronaut uses ingenuity and humor to make it home alive.' },
-  { title: 'Scream', genre: 'Thriller', year: 1996, rating: '7.4', runtime: '1h 51m', mood: 'scream', description: 'A masked killer turns the rules of horror movies into a deadly game.' },
-  { title: 'The Secret Life of Walter Mitty', genre: 'Adventure', year: 2013, rating: '7.3', runtime: '1h 54m', mood: 'mitty', description: 'A quiet daydreamer takes the leap into a real-world adventure across the globe.' },
-  { title: 'Inside Out 2', genre: 'Animation', year: 2024, rating: '7.5', runtime: '1h 36m', mood: 'insideout', description: 'New emotions arrive just as Riley begins a new chapter of growing up.' },
-  { title: 'Inception', genre: 'Sci-Fi', year: 2010, rating: '8.8', runtime: '2h 28m', mood: 'interstellar', description: 'A skilled thief enters people’s dreams to steal secrets and faces an impossible final job.' },
-  { title: 'The Matrix', genre: 'Sci-Fi', year: 1999, rating: '8.7', runtime: '2h 16m', mood: 'batman', description: 'A computer hacker discovers the hidden truth behind the world he knows.' },
-  { title: 'Arrival', genre: 'Sci-Fi', year: 2016, rating: '7.9', runtime: '1h 56m', mood: 'interstellar', description: 'A linguist works to communicate with visitors from beyond Earth before fear takes over.' },
-  { title: 'Blade Runner 2049', genre: 'Sci-Fi', year: 2017, rating: '8.0', runtime: '2h 44m', mood: 'interstellar', description: 'A new blade runner uncovers a secret that could reshape the future of humanity.' },
-  { title: 'Everything Everywhere All at Once', genre: 'Adventure', year: 2022, rating: '7.8', runtime: '2h 19m', mood: 'spiderverse', description: 'An overwhelmed laundromat owner discovers she may be the key to saving the multiverse.' },
-  { title: 'Barbie', genre: 'Comedy', year: 2023, rating: '6.8', runtime: '1h 54m', mood: 'wicked', description: 'Barbie leaves her familiar world on a journey of self-discovery in the real world.' },
-  { title: 'Get Out', genre: 'Horror', year: 2017, rating: '7.8', runtime: '1h 44m', mood: 'shining', description: 'A weekend visit with his girlfriend’s family becomes a deeply unsettling mystery.' },
-  { title: 'Hereditary', genre: 'Horror', year: 2018, rating: '7.3', runtime: '2h 7m', mood: 'conjuring', description: 'A family confronts disturbing secrets and an increasingly frightening legacy.' },
-  { title: 'A Quiet Place', genre: 'Horror', year: 2018, rating: '7.5', runtime: '1h 30m', mood: 'shining', description: 'A family must live in silence to survive in a world hunted by sound-sensitive creatures.' },
-  { title: 'Knives Out', genre: 'Comedy', year: 2019, rating: '7.9', runtime: '2h 10m', mood: 'budapest', description: 'A detective investigates a novelist’s death amid a family full of suspects.' },
-  { title: 'Parasite', genre: 'Drama', year: 2019, rating: '8.5', runtime: '2h 12m', mood: 'shining', description: 'Two families from very different worlds become entangled in an unexpected scheme.' },
-  { title: 'The Shawshank Redemption', genre: 'Drama', year: 1994, rating: '9.3', runtime: '2h 22m', mood: 'mitty', description: 'A banker sentenced to life in prison builds a lasting friendship and holds on to hope.' },
-  { title: 'Top Gun: Maverick', genre: 'Action', year: 2022, rating: '8.2', runtime: '2h 11m', mood: 'predator', description: 'A veteran Navy pilot returns to train a new generation for a dangerous mission.' },
-  { title: 'Mad Max: Fury Road', genre: 'Action', year: 2015, rating: '8.1', runtime: '2h', mood: 'martian', description: 'A lone wanderer joins a daring escape across a harsh and unforgiving wasteland.' },
-  { title: 'The Lord of the Rings: The Fellowship of the Ring', genre: 'Fantasy', year: 2001, rating: '8.9', runtime: '2h 58m', mood: 'wicked', description: 'A young hobbit begins a perilous journey to destroy a powerful ring.' },
-  { title: 'Harry Potter and the Sorcerer’s Stone', genre: 'Fantasy', year: 2001, rating: '7.7', runtime: '2h 32m', mood: 'wicked', description: 'A boy discovers he is a wizard and begins a new life at a school of magic.' },
-  { title: 'Coco', genre: 'Animation', year: 2017, rating: '8.4', runtime: '1h 45m', mood: 'insideout', description: 'A music-loving boy journeys to the Land of the Dead to uncover his family’s story.' },
-  { title: 'Finding Nemo', genre: 'Animation', year: 2003, rating: '8.2', runtime: '1h 40m', mood: 'insideout', description: 'A cautious clownfish crosses the ocean with an unlikely friend to find his son.' },
-  { title: 'Spirited Away', genre: 'Fantasy', year: 2001, rating: '8.6', runtime: '2h 5m', mood: 'wicked', description: 'A young girl enters a mysterious spirit world and searches for a way to free her parents.' },
-  { title: 'Pride & Prejudice', genre: 'Romance', year: 2005, rating: '7.8', runtime: '2h 9m', mood: 'lalaland', description: 'Elizabeth Bennet and Mr. Darcy challenge their first impressions of one another.' },
-  { title: 'The Notebook', genre: 'Romance', year: 2004, rating: '7.8', runtime: '2h 3m', mood: 'lalaland', description: 'A lifelong love story unfolds across years of separation and change.' },
-  { title: 'The Devil Wears Prada', genre: 'Comedy', year: 2006, rating: '7.0', runtime: '1h 49m', mood: 'budapest', description: 'A new assistant navigates the demanding world of a high-fashion magazine.' },
-  { title: 'The Truman Show', genre: 'Drama', year: 1998, rating: '8.2', runtime: '1h 43m', mood: 'interstellar', description: 'A man begins to suspect that the seemingly perfect world around him is staged.' },
-  { title: 'Jurassic Park', genre: 'Adventure', year: 1993, rating: '8.2', runtime: '2h 7m', mood: 'martian', description: 'A visit to a dinosaur theme park becomes a fight for survival when its systems fail.' },
-  { title: 'Gladiator', genre: 'Action', year: 2000, rating: '8.5', runtime: '2h 35m', mood: 'predator', description: 'A betrayed Roman general fights his way through the arena and seeks justice.' },
-  { title: 'The Social Network', genre: 'Drama', year: 2010, rating: '7.8', runtime: '2h', mood: 'batman', description: 'The creation of a social networking site brings ambition, friendship, and conflict together.' },
-];
-const genres = ['Action', 'Adventure', 'Animation', 'Comedy', 'Drama', 'Fantasy', 'Horror', 'Romance', 'Sci-Fi', 'Thriller'];
-const tmdbGenreNames = {
-  12: 'Adventure', 14: 'Fantasy', 16: 'Animation', 18: 'Drama', 27: 'Horror', 28: 'Action',
-  35: 'Comedy', 36: 'Drama', 37: 'Adventure', 53: 'Thriller', 80: 'Thriller', 99: 'Documentary',
-  878: 'Sci-Fi', 9648: 'Mystery', 10402: 'Music', 10749: 'Romance', 10751: 'Family',
-  10752: 'Action', 10770: 'Drama',
-};
+const genres = ['Animation', 'Adventure', 'Fantasy', 'Sci-Fi', 'Comedy', 'Drama'];
 const titleSlug = (title) => title.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '');
-const TmdbPostersContext = createContext({ movies: [], trending: [], loading: false, error: '', trendingLoading: false, trendingError: '' });
-const posterCacheKey = 'screenhub-tmdb-movies-v5';
-const posterCacheDuration = 7 * 24 * 60 * 60 * 1000;
-let pendingPosterRequest;
-let pendingTrendingRequest;
+const FreeMoviesContext = createContext({ movies: [], loading: false, error: '', loaded: false, retry: () => {} });
+const freeMoviesCacheKey = 'screenhub-free-movies-v1';
+const freeMoviesCacheDuration = 12 * 60 * 60 * 1000;
+const openFilmLicenses = new Set([
+  'https://creativecommons.org/licenses/by/3.0/',
+  'https://creativecommons.org/licenses/by/3.0/us/',
+  'https://creativecommons.org/licenses/by/4.0/',
+  'https://creativecommons.org/publicdomain/mark/1.0/',
+]);
+let pendingFreeMoviesRequest;
 
-function toCatalogMovie(movie, mood = 'default') {
-  const mappedGenres = movie.genre_ids.map((id) => tmdbGenreNames[id]).filter(Boolean);
+function isValidFreeMovie(movie) {
+  return movie &&
+    typeof movie.identifier === 'string' &&
+    typeof movie.title === 'string' &&
+    typeof movie.description === 'string' &&
+    typeof movie.embed_url === 'string' &&
+    movie.embed_url === `https://archive.org/embed/${encodeURIComponent(movie.identifier)}` &&
+    openFilmLicenses.has(movie.license_url) &&
+    typeof movie.license_name === 'string' &&
+    movie.creator === 'Blender Foundation' &&
+    typeof movie.genre === 'string' &&
+    Array.isArray(movie.genres) &&
+    movie.genres.every((genre) => typeof genre === 'string') &&
+    Number.isInteger(movie.year) &&
+    typeof movie.runtime === 'string';
+}
+
+function readFreeMoviesCache() {
+  try {
+    const cached = JSON.parse(localStorage.getItem(freeMoviesCacheKey) || 'null');
+    if (
+      !cached ||
+      !Number.isFinite(cached.savedAt) ||
+      cached.savedAt > Date.now() ||
+      Date.now() - cached.savedAt > freeMoviesCacheDuration ||
+      !Array.isArray(cached.movies)
+    ) return [];
+    return cached.movies.filter(isValidFreeMovie).map(toOpenCatalogMovie);
+  } catch (error) {
+    console.warn('Unable to read cached free movie catalog.', error);
+    return [];
+  }
+}
+
+function toOpenCatalogMovie(movie) {
+  const posterUrl = `https://archive.org/services/img/${encodeURIComponent(movie.identifier)}`;
   return {
-    id: movie.id,
+    id: movie.identifier,
+    archiveId: movie.identifier,
     title: movie.title,
-    genre: mappedGenres[0] || 'Other',
-    genres: mappedGenres,
-    year: movie.release_date?.match(/^\d{4}/)?.[0] || 'TBA',
-    rating: Number.isFinite(movie.vote_average) ? movie.vote_average.toFixed(1) : '—',
-    runtime: 'Movie',
-    description: movie.overview || 'No overview is available for this title.',
-    mood,
-    posterPath: movie.poster_path,
-    backdropPath: movie.backdrop_path,
-    trailerKey: movie.featured_video_key || null,
+    genre: movie.genre,
+    genres: movie.genres,
+    year: movie.year,
+    rating: 'Free',
+    runtime: movie.runtime,
+    description: movie.description,
+    mood: 'open-movie',
+    posterPath: posterUrl,
+    backdropPath: posterUrl,
+    embedUrl: movie.embed_url,
+    creator: movie.creator,
+    licenseUrl: movie.license_url,
+    licenseName: movie.license_name,
   };
 }
 
-async function invokePosterLookup(titles) {
-  const batches = [];
-  for (let index = 0; index < titles.length; index += 25) batches.push(titles.slice(index, index + 25));
-  const responses = await Promise.all(batches.map(async (batch) => {
-    const { data, error } = await supabase.functions.invoke('tmdb-posters', { body: { titles: batch } });
-    if (error) {
-      const response = error.context;
-      if (response instanceof Response) {
-        const details = await response.clone().json().catch(() => null);
-        throw new Error(details?.error || `${error.message} (HTTP ${response.status})`);
-      }
-      throw error;
-    }
-    if (!data?.movies || typeof data.movies !== 'object') throw new Error('The TMDB movie service returned an invalid response.');
-    return data.movies;
-  }));
-  return Object.assign({}, ...responses);
-}
-
-async function invokeTrendingLookup() {
-  const { data, error } = await supabase.functions.invoke('tmdb-posters', { body: { action: 'trending' } });
+async function invokeFreeMoviesLookup() {
+  const { data, error } = await supabase.functions.invoke('tmdb-posters', { body: { action: 'free-movies' } });
   if (error) {
     const response = error.context;
     if (response instanceof Response) {
@@ -146,104 +116,42 @@ async function invokeTrendingLookup() {
     }
     throw error;
   }
-  if (!Array.isArray(data?.trending)) throw new Error('TMDB returned an invalid trending movies response.');
-  return data.trending.filter((movie) =>
-    movie &&
-    Number.isInteger(movie.id) &&
-    typeof movie.title === 'string' &&
-    Array.isArray(movie.genre_ids) &&
-    typeof movie.vote_average === 'number' &&
-    (movie.featured_video_key === undefined || movie.featured_video_key === null || /^[\w-]{11}$/.test(movie.featured_video_key))
-  );
+  if (!Array.isArray(data?.movies)) throw new Error('The free movie catalog returned an invalid response.');
+  return data.movies.filter(isValidFreeMovie);
 }
 
-function readPosterCache() {
-  try {
-    const cached = JSON.parse(localStorage.getItem(posterCacheKey) || 'null');
-    const now = Date.now();
-    if (!cached || !Number.isFinite(cached.savedAt) || cached.savedAt > now || now - cached.savedAt > posterCacheDuration || !cached.movies || typeof cached.movies !== 'object') return {};
-    return Object.fromEntries(Object.entries(cached.movies).filter(([, movie]) =>
-      movie === null || (
-        movie &&
-        typeof movie.title === 'string' &&
-        typeof movie.release_date === 'string' &&
-        Array.isArray(movie.genre_ids) &&
-        typeof movie.vote_average === 'number' &&
-        (movie.backdrop_path === null || typeof movie.backdrop_path === 'string') &&
-        (movie.featured_video_key === undefined || movie.featured_video_key === null || /^[\w-]{11}$/.test(movie.featured_video_key))
-      )
-    ));
-  } catch (error) {
-    console.warn('Unable to read cached TMDB posters.', error);
-    return {};
-  }
-}
-
-function TmdbPostersProvider({ children }) {
+function FreeMoviesProvider({ children }) {
   const { session } = useAuth();
-  const [tmdbMovies, setTmdbMovies] = useState(readPosterCache);
-  const [trendingMovies, setTrendingMovies] = useState([]);
-  const [loading, setLoading] = useState(false);
+  const [movies, setMovies] = useState(readFreeMoviesCache);
+  const [loading, setLoading] = useState(movies.length === 0);
   const [error, setError] = useState('');
-  const [trendingLoading, setTrendingLoading] = useState(false);
-  const [trendingError, setTrendingError] = useState('');
-  const [loaded, setLoaded] = useState(false);
+  const [loaded, setLoaded] = useState(movies.length > 0);
   const [retryCount, setRetryCount] = useState(0);
 
   useEffect(() => {
     if (!session?.user?.id || !supabase) return undefined;
-    const missing = media.filter((item) => !Object.hasOwn(tmdbMovies, item.title)).map(({ title, year }) => ({ title, year, featured: media.findIndex((candidate) => candidate.title === title) < 8 }));
-    if (!missing.length) { setLoaded(true); return undefined; }
     let active = true;
     setLoading(true);
     setError('');
-    const load = async () => {
-      try {
-        if (!pendingPosterRequest) {
-          pendingPosterRequest = invokePosterLookup(missing)
-            .finally(() => { pendingPosterRequest = undefined; });
-        }
-        const result = await pendingPosterRequest;
-        const found = Object.fromEntries(Object.entries(result).filter(([, movie]) => movie === null || (
-          movie && typeof movie.title === 'string' && Array.isArray(movie.genre_ids)
-        )));
-        const merged = { ...tmdbMovies, ...found };
-        if (!active) return;
-        setTmdbMovies(merged);
-        setLoaded(true);
-        try {
-          localStorage.setItem(posterCacheKey, JSON.stringify({ savedAt: Date.now(), movies: merged }));
-        } catch (cacheError) {
-          console.warn('Unable to cache TMDB posters.', cacheError);
-        }
-      } catch (cause) {
-        if (!active) return;
-        console.error('Unable to load TMDB posters.', cause);
-        setError(cause instanceof Error ? cause.message : 'An unexpected error occurred.');
-      } finally {
-        if (active) setLoading(false);
-      }
-    };
-    load();
-    return () => { active = false; };
-  }, [session?.user?.id, retryCount]);
-
-  useEffect(() => {
-    if (!session?.user?.id || !supabase) return undefined;
-    let active = true;
-    setTrendingLoading(true);
-    setTrendingError('');
-    if (!pendingTrendingRequest) {
-      pendingTrendingRequest = invokeTrendingLookup().finally(() => { pendingTrendingRequest = undefined; });
+    if (!pendingFreeMoviesRequest) {
+      pendingFreeMoviesRequest = invokeFreeMoviesLookup().finally(() => { pendingFreeMoviesRequest = undefined; });
     }
-    pendingTrendingRequest.then((result) => {
-      if (active) setTrendingMovies(result);
+    pendingFreeMoviesRequest.then((result) => {
+      if (!active) return;
+      const mapped = result.map(toOpenCatalogMovie);
+      setMovies(mapped);
+      setLoaded(true);
+      try {
+        localStorage.setItem(freeMoviesCacheKey, JSON.stringify({ savedAt: Date.now(), movies: result }));
+      } catch (cacheError) {
+        console.warn('Unable to cache free movie catalog.', cacheError);
+      }
     }).catch((cause) => {
       if (!active) return;
-      console.error('Unable to load globally trending TMDB movies.', cause);
-      setTrendingError(cause instanceof Error ? cause.message : 'An unexpected error occurred.');
+      console.error('Unable to load free full movies.', cause);
+      setError(cause instanceof Error ? cause.message : 'An unexpected error occurred.');
     }).finally(() => {
-      if (active) setTrendingLoading(false);
+      if (active) setLoading(false);
     });
     return () => { active = false; };
   }, [session?.user?.id, retryCount]);
@@ -253,17 +161,7 @@ function TmdbPostersProvider({ children }) {
     setRetryCount((count) => count + 1);
   };
 
-  const movieBySeed = new Map(media.map((seed) => [seed.title, seed]));
-  const catalog = Object.entries(tmdbMovies).flatMap(([seedTitle, movie]) => {
-    const seed = movieBySeed.get(seedTitle);
-    if (!seed || !movie) return [];
-    return [toCatalogMovie(movie, seed.mood)];
-  });
-  const trending = trendingMovies.map((movie) => toCatalogMovie(movie));
-  const trendingIds = new Set(trending.map((movie) => movie.id));
-  const completeCatalog = [...trending, ...catalog.filter((movie) => !trendingIds.has(movie.id))];
-
-  return <TmdbPostersContext.Provider value={{ movies: completeCatalog, trending, loading, error, trendingLoading, trendingError, loaded, retry }}>{children}</TmdbPostersContext.Provider>;
+  return <FreeMoviesContext.Provider value={{ movies, loading, error, loaded, retry }}>{children}</FreeMoviesContext.Provider>;
 }
 
 function SetupNotice() {
@@ -276,7 +174,7 @@ function App() {
   useEffect(() => localStorage.setItem('screenhub-watchlist', JSON.stringify(watchlist)), [watchlist]);
   const toggleWatchlist = (title) => setWatchlist((current) => current.includes(title) ? current.filter((item) => item !== title) : [...current, title]);
   const browseProps = { watchlist, toggleWatchlist };
-  return <AuthProvider><SetupNotice /><TmdbPostersProvider><Routes>
+  return <AuthProvider><SetupNotice /><FreeMoviesProvider><Routes>
     <Route path="/" element={<SignIn />} />
     <Route path="/signup" element={<SignUp />} />
     <Route path="/forgot-password" element={<ForgotPassword />} />
@@ -289,7 +187,7 @@ function App() {
     <Route path="/title/:slug" element={<Protected><TitlePage {...browseProps} /></Protected>} />
     <Route path="/profile" element={<Protected><Profile /></Protected>} />
     <Route path="*" element={<Navigate to="/" replace />} />
-  </Routes></TmdbPostersProvider></AuthProvider>;
+  </Routes></FreeMoviesProvider></AuthProvider>;
 }
 
 function Protected({ children }) {
@@ -388,49 +286,28 @@ function Field({ label, value, onChange, type = 'text', ...props }) {
   return <label className="field"><span>{label}</span><input type={type} value={value} onChange={(event) => onChange(event.target.value)} {...props} /></label>;
 }
 
-function LegacyHeader() {
-  const { profile } = useAuth(); const navigate = useNavigate(); const [menu, setMenu] = useState(false);
-  async function signOut() { await supabase.auth.signOut(); navigate('/'); }
-  const initials = `${profile?.first_name?.[0] ?? ''}${profile?.last_name?.[0] ?? ''}`.toUpperCase() || profile?.username?.[0]?.toUpperCase() || 'S';
-  return <header className="site-header"><Link className="wordmark" to="/home">SCREENHUB</Link><nav><Link to="/home">Home</Link><a href="#catalog">Movies &amp; series</a></nav><div className="header-user"><button className="avatar" onClick={() => setMenu(!menu)} aria-label="Open account menu">{initials}{profile?.avatar && <img src={profile.avatar} alt="" onError={(event) => { event.currentTarget.style.display = 'none'; }} />}</button>{menu && <div className="account-menu"><b>{[profile?.first_name, profile?.last_name].filter(Boolean).join(' ') || 'Your account'}</b><span>@{profile?.username}</span><Link to="/profile" onClick={() => setMenu(false)}>Edit profile</Link><button onClick={signOut}>Sign out</button></div>}</div></header>;
-}
-
-function PosterRow({ title, items }) { return <section className="catalog-section" id="catalog"><div className="section-heading"><h2>{title}</h2><span>Explore all</span></div><div className="poster-row">{items.map((item) => <Link className="poster-card" to={item.title === 'Squid Game' ? '/series/squid-game' : '/home'} key={item.title}><div className="poster-placeholder" aria-label={`${item.title} poster placeholder`}><span>{item.title}</span></div><span>{item.title}</span></Link>)}</div></section>; }
-
-function LegacyHome() {
-  const [query, setQuery] = useState(''); const [genre, setGenre] = useState('All');
-  const filtered = media.filter((item) => item.title.toLowerCase().includes(query.toLowerCase()) && (genre === 'All' || item.genre === genre));
-  const popular = [{ title: 'Squid Game', genre: 'Drama' }, ...media.slice(2, 9)];
-  return <><Header /><main className="home-page"><section className="featured-hero"><div className="hero-shade"/><div className="hero-copy"><div className="eyebrow">✦ &nbsp;FEATURED TONIGHT</div><h1>Predator:<br />Badlands</h1><p>Banished from his group, a young Predator forms an unexpected partnership with a human survivor deep in the dangerous Badlands.</p><div className="hero-meta"><span>IMDb 7.3</span><span>2025</span><span>Action · Sci-Fi</span><span>1h 52m</span></div><a className="primary-btn hero-btn" href="#catalog">Explore titles <span>→</span></a></div></section>
-    <div className="discover-tools"><div className="genre-tabs">{['All', 'Action', 'Horror', 'Drama', 'Animation'].map((item) => <button key={item} className={genre === item ? 'selected' : ''} onClick={() => setGenre(item)}>{item}</button>)}</div><label className="search"><span>⌕</span><input placeholder="Search titles" value={query} onChange={(event) => setQuery(event.target.value)} /></label></div>
-    {filtered.length ? <PosterRow title={query || genre !== 'All' ? 'Search results' : 'Trending movies'} items={filtered} /> : <p className="empty-state">No titles match that search.</p>}
-    <PosterRow title="Popular series" items={popular} />
-  </main></>;
-}
-
 function Header() {
   const { profile } = useAuth(); const navigate = useNavigate(); const location = useLocation(); const [menu, setMenu] = useState(false); const [search, setSearch] = useState(new URLSearchParams(location.search).get('q') || '');
   useEffect(() => setSearch(new URLSearchParams(location.search).get('q') || ''), [location.search]);
   async function signOut() { await supabase.auth.signOut(); navigate('/'); }
   function submitSearch(event) { event.preventDefault(); navigate(`/search?q=${encodeURIComponent(search.trim())}`); }
   const initials = `${profile?.first_name?.[0] ?? ''}${profile?.last_name?.[0] ?? ''}`.toUpperCase() || profile?.username?.[0]?.toUpperCase() || 'S';
-  return <header className="site-header"><Link className="wordmark" to="/home">SCREEN<span>HUB</span></Link><nav className="main-nav"><Link className={location.pathname === '/home' ? 'active' : ''} to="/home">Home</Link><Link className={location.pathname === '/browse' ? 'active' : ''} to="/browse">Discover</Link><Link className={location.pathname === '/watchlist' ? 'active' : ''} to="/watchlist">My list</Link></nav><form className="header-search" onSubmit={submitSearch}><span>⌕</span><input aria-label="Search movies and series" value={search} onChange={(event) => setSearch(event.target.value)} placeholder="Titles, genres, moods..." /><kbd>↵</kbd></form><div className="header-user"><button className="avatar" onClick={() => setMenu(!menu)} aria-label="Open account menu">{initials}{profile?.avatar && <img src={profile.avatar} alt="" onError={(event) => { event.currentTarget.style.display = 'none'; }} />}</button>{menu && <div className="account-menu"><b>{[profile?.first_name, profile?.last_name].filter(Boolean).join(' ') || 'Your account'}</b><span>@{profile?.username}</span><Link to="/profile" onClick={() => setMenu(false)}>Edit profile</Link><button onClick={signOut}>Sign out</button></div>}</div></header>;
+  return <header className="site-header"><Link className="wordmark" to="/home">SCREEN<span>HUB</span></Link><nav className="main-nav"><Link className={location.pathname === '/home' ? 'active' : ''} to="/home">Home</Link><Link className={location.pathname === '/browse' ? 'active' : ''} to="/browse">Discover</Link><Link className={location.pathname === '/watchlist' ? 'active' : ''} to="/watchlist">My list</Link></nav><form className="header-search" onSubmit={submitSearch}><span>⌕</span><input aria-label="Search free films" value={search} onChange={(event) => setSearch(event.target.value)} placeholder="Titles, genres, moods..." /><kbd>↵</kbd></form><div className="header-user"><button className="avatar" onClick={() => setMenu(!menu)} aria-label="Open account menu">{initials}{profile?.avatar && <img src={profile.avatar} alt="" onError={(event) => { event.currentTarget.style.display = 'none'; }} />}</button>{menu && <div className="account-menu"><b>{[profile?.first_name, profile?.last_name].filter(Boolean).join(' ') || 'Your account'}</b><span>@{profile?.username}</span><Link to="/profile" onClick={() => setMenu(false)}>Edit profile</Link><button onClick={signOut}>Sign out</button></div>}</div></header>;
 }
 
 function PosterCard({ item, watchlist = [], toggleWatchlist }) {
   const [imageFailed, setImageFailed] = useState(false);
   const posterPath = imageFailed ? null : item.posterPath;
   const saved = watchlist.includes(item.title);
-  return <article className="poster-card"><Link className={`poster-art art-${item.mood || 'default'} ${posterPath ? 'has-tmdb-poster' : ''}`} to={`/title/${titleSlug(item.title)}`} aria-label={`View ${item.title}`}><span className="art-kicker">{posterPath ? 'TMDB POSTER' : 'SCREENHUB'}</span>{posterPath && <img className="poster-image" src={`https://image.tmdb.org/t/p/w500${posterPath}`} alt={`${item.title} poster`} loading="lazy" decoding="async" onError={() => setImageFailed(true)} />}<strong>{item.title}</strong><span className="art-genre">{item.genre}</span><span className="art-glow" /></Link><div className="poster-info"><Link to={`/title/${titleSlug(item.title)}`} className="poster-title">{item.title}</Link><span>{item.year} <i>·</i> ★ {item.rating}</span></div>{toggleWatchlist && <button type="button" className={`save-title ${saved ? 'saved' : ''}`} aria-label={saved ? `Remove ${item.title} from My list` : `Add ${item.title} to My list`} onClick={() => toggleWatchlist(item.title)}>{saved ? '✓' : '+'}</button>}</article>;
+  return <article className="poster-card"><Link className={`poster-art art-${item.mood || 'default'} ${posterPath ? 'has-poster' : ''}`} to={`/title/${titleSlug(item.title)}`} aria-label={`Watch ${item.title}`}><span className="art-kicker">{item.licenseName?.startsWith('Creative Commons Public Domain') ? 'PUBLIC DOMAIN' : 'CC LICENSED'}</span>{posterPath && <img className="poster-image" src={posterPath} alt={`${item.title} poster`} loading="lazy" decoding="async" onError={() => setImageFailed(true)} />}<strong>{item.title}</strong><span className="art-genre">{item.genre}</span><span className="art-glow" /></Link><div className="poster-info"><Link to={`/title/${titleSlug(item.title)}`} className="poster-title">{item.title}</Link><span>{item.year} <i>·</i> {item.runtime} · Free</span></div>{toggleWatchlist && <button type="button" className={`save-title ${saved ? 'saved' : ''}`} aria-label={saved ? `Remove ${item.title} from My list` : `Add ${item.title} to My list`} onClick={() => toggleWatchlist(item.title)}>{saved ? '✓' : '+'}</button>}</article>;
 }
 
 function PosterServiceNotice() {
-  const { movies, loading, error, loaded, retry } = useContext(TmdbPostersContext);
-  const found = movies.filter((movie) => movie.posterPath).length;
-  if (error) return <div className="poster-service-notice error" role="alert"><span>TMDB movies could not load: {error}</span><button type="button" onClick={retry}>Retry</button></div>;
-  if (loading) return <div className="poster-service-notice" role="status">Verifying catalog titles with TMDB…</div>;
-  if (movies.length) return <div className="poster-service-notice success" role="status">{movies.length} verified TMDB movies · {found} with posters</div>;
-  if (loaded) return <div className="poster-service-notice" role="status">No exact TMDB movie matches were found. Try retrying in a moment.</div>;
+  const { movies, loading, error, loaded, retry } = useContext(FreeMoviesContext);
+  if (error) return <div className="poster-service-notice error" role="alert"><span>Free movies could not load: {error}</span><button type="button" onClick={retry}>Retry</button></div>;
+  if (loading) return <div className="poster-service-notice" role="status">Verifying free-to-watch movies…</div>;
+  if (movies.length) return <div className="poster-service-notice success" role="status">{movies.length} verified free movies · full films play here</div>;
+  if (loaded) return <div className="poster-service-notice" role="status">No free movies are available right now. Please try again.</div>;
   return null;
 }
 
@@ -441,7 +318,7 @@ function MovieRow({ title, items, watchlist, toggleWatchlist, link = '/browse' }
 function TrendingHero({ movies, loading, error, watchlist, toggleWatchlist }) {
   const [activeIndex, setActiveIndex] = useState(0);
   const [touchStartX, setTouchStartX] = useState(null);
-  if (!movies.length) return <section className="featured-hero trending-hero-empty" aria-live="polite"><div className="hero-grain" /><div className="hero-copy"><div className="eyebrow">GLOBAL MOVIE TRENDS</div><h1>{loading ? 'Loading trending movies…' : 'Trending is unavailable'}</h1><p>{error || 'TMDB has not returned globally trending movies yet. Please try again shortly.'}</p></div></section>;
+  if (!movies.length) return <section className="featured-hero trending-hero-empty" aria-live="polite"><div className="hero-grain" /><div className="hero-copy"><div className="eyebrow">FREE FULL MOVIES</div><h1>{loading ? 'Verifying free films…' : 'Free movies are unavailable'}</h1><p>{error || 'No free full movies are verified right now. Please try again shortly.'}</p></div></section>;
   const slideIndex = activeIndex % movies.length;
   const featured = movies[slideIndex];
   const heroBackdrop = featured.backdropPath || featured.posterPath;
@@ -452,46 +329,45 @@ function TrendingHero({ movies, loading, error, watchlist, toggleWatchlist }) {
     if (Math.abs(distance) > 45) moveSlide(distance < 0 ? 1 : -1);
     setTouchStartX(null);
   };
-  return <section className={`featured-hero trending-hero feature-${featured.genre.toLowerCase().replace(/[^a-z0-9]+/g, '-')}`} onTouchStart={(event) => setTouchStartX(event.changedTouches[0].clientX)} onTouchEnd={endSwipe} aria-roledescription="carousel" aria-label="Globally trending movies">
-    {heroBackdrop && <img className="feature-backdrop" src={`https://image.tmdb.org/t/p/original${heroBackdrop}`} alt="" aria-hidden="true" />}
-    {featured.trailerKey && <iframe className="feature-video" src={`https://www.youtube-nocookie.com/embed/${featured.trailerKey}?autoplay=1&mute=1&controls=0&loop=1&playlist=${featured.trailerKey}&playsinline=1&modestbranding=1&rel=0`} title={`Muted looping trailer for ${featured.title}`} aria-hidden="true" tabIndex="-1" allow="autoplay; encrypted-media; picture-in-picture" referrerPolicy="strict-origin-when-cross-origin" />}
+  return <section className={`featured-hero trending-hero feature-${featured.genre.toLowerCase().replace(/[^a-z0-9]+/g, '-')}`} onTouchStart={(event) => setTouchStartX(event.changedTouches[0].clientX)} onTouchEnd={endSwipe} aria-roledescription="carousel" aria-label="Free full movies">
+    {heroBackdrop && <img className="feature-backdrop" src={heroBackdrop} alt="" aria-hidden="true" />}
     <div className="hero-grain" />
-    <div className="hero-copy" aria-live="polite"><div className="eyebrow"><span className="live-dot" /> GLOBAL TMDB TRENDING</div><div className="hero-label">TRENDING THIS WEEK · {slideIndex + 1} OF {movies.length}</div><h1>{featured.title}</h1><p>{featured.description}</p><div className="hero-meta"><span className="rating-pill">★ {featured.rating}</span><span>{featured.year}</span><span>{featured.genre}</span></div><div className="hero-actions"><Link className="primary-btn hero-btn" to={`/title/${titleSlug(featured.title)}`}>View movie <span>→</span></Link><button className="quiet-btn" onClick={() => toggleWatchlist(featured.title)}>{watchlist.includes(featured.title) ? '✓ In my list' : '+ Add to my list'}</button></div></div>
-    <div className="hero-carousel-controls"><button type="button" onClick={() => moveSlide(-1)} aria-label="Previous trending movie">←</button><div className="hero-carousel-dots">{movies.map((movie, index) => <button type="button" key={movie.id} className={index === slideIndex ? 'selected' : ''} onClick={() => setActiveIndex(index)} aria-label={`Show trending movie ${index + 1}: ${movie.title}`} aria-current={index === slideIndex ? 'true' : undefined} />)}</div><button type="button" onClick={() => moveSlide(1)} aria-label="Next trending movie">→</button></div>
+    <div className="hero-copy" aria-live="polite"><div className="eyebrow"><span className="live-dot" /> FREE FULL MOVIES</div><div className="hero-label">OPEN MOVIE · {slideIndex + 1} OF {movies.length}</div><h1>{featured.title}</h1><p>{featured.description}</p><div className="hero-meta"><span className="rating-pill">FREE</span><span>{featured.year}</span><span>{featured.runtime}</span></div><div className="hero-actions"><Link className="primary-btn hero-btn" to={`/title/${titleSlug(featured.title)}`}>Watch full movie <span>→</span></Link><button className="quiet-btn" onClick={() => toggleWatchlist(featured.title)}>{watchlist.includes(featured.title) ? '✓ In my list' : '+ Add to my list'}</button></div></div>
+    <div className="hero-carousel-controls"><button type="button" onClick={() => moveSlide(-1)} aria-label="Previous free movie">←</button><div className="hero-carousel-dots">{movies.map((movie, index) => <button type="button" key={movie.id} className={index === slideIndex ? 'selected' : ''} onClick={() => setActiveIndex(index)} aria-label={`Show free movie ${index + 1}: ${movie.title}`} aria-current={index === slideIndex ? 'true' : undefined} />)}</div><button type="button" onClick={() => moveSlide(1)} aria-label="Next free movie">→</button></div>
   </section>;
 }
 
 function Home({ watchlist, toggleWatchlist }) {
-  const { movies, trending, trendingLoading, trendingError } = useContext(TmdbPostersContext);
+  const { movies, loading, error } = useContext(FreeMoviesContext);
   const usedGenreArtwork = new Set();
-  return <><Header /><PosterServiceNotice /><main className="home-page"><TrendingHero movies={trending} loading={trendingLoading} error={trendingError} watchlist={watchlist} toggleWatchlist={toggleWatchlist} />
-    <div className="home-intro"><div><div className="eyebrow">CURATED FOR YOUR NEXT MOVIE NIGHT</div><h2>Find your <em>kind</em> of story.</h2></div><Link className="all-genres-link" to="/browse">Browse all genres <span>→</span></Link></div><div className="genre-shortcuts">{genres.slice(0, 6).map((genre, index) => {
+  return <><Header /><PosterServiceNotice /><main className="home-page"><TrendingHero movies={movies} loading={loading} error={error} watchlist={watchlist} toggleWatchlist={toggleWatchlist} />
+    <div className="home-intro"><div><div className="eyebrow">OPEN FILMS · FREE TO WATCH</div><h2>Find your <em>kind</em> of story.</h2></div><Link className="all-genres-link" to="/browse">Browse free movies <span>→</span></Link></div><div className="genre-shortcuts">{genres.slice(0, 6).map((genre, index) => {
       const candidates = movies.filter((movie) => movie.genres.includes(genre)).sort((a, b) => Number(b.genre === genre) - Number(a.genre === genre));
       const genreMovie = candidates.find((movie) => !usedGenreArtwork.has(movie.backdropPath || movie.posterPath)) || candidates[0];
       const image = genreMovie && (genreMovie.backdropPath || genreMovie.posterPath);
       if (image) usedGenreArtwork.add(image);
-      const style = image ? { '--genre-image': `url("https://image.tmdb.org/t/p/w780${image}")` } : undefined;
+      const style = image ? { '--genre-image': `url("${image}")` } : undefined;
       return <Link key={genre} className={`genre-tile genre-tile-${index}`} style={style} to={`/genre/${encodeURIComponent(genre.toLowerCase())}`}><span>0{index + 1}</span><strong>{genre}</strong><i>↗</i></Link>;
     })}</div>
-    <MovieRow title="Popular this week" items={movies.slice(0, 8)} watchlist={watchlist} toggleWatchlist={toggleWatchlist} /><MovieRow title="Made for the big screen" items={movies.filter((item) => ['Adventure', 'Sci-Fi', 'Action'].includes(item.genre)).slice(0, 7)} watchlist={watchlist} toggleWatchlist={toggleWatchlist} /><MovieRow title="Stories after dark" items={movies.filter((item) => item.genres.some((itemGenre) => ['Horror', 'Thriller'].includes(itemGenre)))} watchlist={watchlist} toggleWatchlist={toggleWatchlist} link="/genre/horror" /><Footer /></main></>;
+    <MovieRow title="Free full films" items={movies} watchlist={watchlist} toggleWatchlist={toggleWatchlist} /><Footer /></main></>;
 }
 
 function PageShell({ eyebrow, title, description, children }) { return <><Header /><PosterServiceNotice /><main className="browse-page"><div className="page-heading"><div className="eyebrow">{eyebrow}</div><h1>{title}</h1><p>{description}</p></div>{children}<Footer /></main></>; }
 
 function Browse({ watchlist, toggleWatchlist }) {
-  const { movies } = useContext(TmdbPostersContext);
+  const { movies } = useContext(FreeMoviesContext);
   const [genre, setGenre] = useState('All');
   const [query, setQuery] = useState('');
-  const [sort, setSort] = useState('popular');
+  const [sort, setSort] = useState('featured');
   const visibleMedia = movies
     .filter((item) => (genre === 'All' || item.genre === genre) && `${item.title} ${item.genre} ${item.description}`.toLowerCase().includes(query.trim().toLowerCase()))
     .slice()
-    .sort((a, b) => sort === 'title' ? a.title.localeCompare(b.title) : sort === 'year' ? (Number(b.year) || 0) - (Number(a.year) || 0) : Number(b.rating) - Number(a.rating));
+    .sort((a, b) => sort === 'title' ? a.title.localeCompare(b.title) : sort === 'year' ? b.year - a.year : 0);
   return <PageShell eyebrow="THE SCREENHUB GUIDE" title={<>Find your next<br /><em>favorite story.</em></>} description="Search the collection, filter by genre, then open any title for its details.">
     <section className="catalog-section browse-catalog">
       <div className="browse-controls">
         <label className="browse-search"><span aria-hidden="true">⌕</span><input aria-label="Search the catalog" placeholder="Search titles or genres" value={query} onChange={(event) => setQuery(event.target.value)} />{query && <button type="button" onClick={() => setQuery('')} aria-label="Clear search">×</button>}</label>
-        <label className="sort-control"><span>Sort by</span><select value={sort} onChange={(event) => setSort(event.target.value)}><option value="popular">Top rated</option><option value="year">Newest</option><option value="title">Title A–Z</option></select></label>
+        <label className="sort-control"><span>Sort by</span><select value={sort} onChange={(event) => setSort(event.target.value)}><option value="featured">Featured</option><option value="year">Newest</option><option value="title">Title A–Z</option></select></label>
       </div>
       <div className="browse-filters" aria-label="Filter movies by genre">{['All', ...genres].map((item) => <button type="button" key={item} className={genre === item ? 'selected' : ''} aria-pressed={genre === item} onClick={() => setGenre(item)}>{item}</button>)}</div>
       <div className="section-heading browse-results-heading"><h2>{genre === 'All' ? 'All movies' : `${genre} movies`}</h2><span>{visibleMedia.length} {visibleMedia.length === 1 ? 'title' : 'titles'}</span></div>
@@ -501,101 +377,39 @@ function Browse({ watchlist, toggleWatchlist }) {
 }
 
 function GenrePage({ watchlist, toggleWatchlist }) {
-  const { genre = '' } = useParams(); const { movies } = useContext(TmdbPostersContext); const name = genres.find((item) => item.toLowerCase() === decodeURIComponent(genre).toLowerCase()); const items = movies.filter((item) => item.genres.some((itemGenre) => itemGenre.toLowerCase() === (name || genre).toLowerCase()));
+  const { genre = '' } = useParams(); const { movies } = useContext(FreeMoviesContext); const name = genres.find((item) => item.toLowerCase() === decodeURIComponent(genre).toLowerCase()); const items = movies.filter((item) => item.genres.some((itemGenre) => itemGenre.toLowerCase() === (name || genre).toLowerCase()));
   return <PageShell eyebrow="EXPLORE COLLECTION" title={<>{name || 'Genre'} <em>stories.</em></>} description={`A hand-picked collection of ${name || genre} films for your next movie night.`}><section className="result-grid">{items.length ? items.map((item) => <PosterCard key={item.title} item={item} watchlist={watchlist} toggleWatchlist={toggleWatchlist} />) : <p className="empty-state">This collection is coming soon. Explore all genres to find your next film.</p>}</section><Link className="back-to-browse" to="/browse">← All genres</Link></PageShell>;
 }
 
 function SearchPage({ watchlist, toggleWatchlist }) {
-  const { movies } = useContext(TmdbPostersContext); const [params, setParams] = useSearchParams(); const query = params.get('q') || ''; const matches = movies.filter((item) => `${item.title} ${item.genres.join(' ')} ${item.description}`.toLowerCase().includes(query.trim().toLowerCase()));
+  const { movies } = useContext(FreeMoviesContext); const [params, setParams] = useSearchParams(); const query = params.get('q') || ''; const matches = movies.filter((item) => `${item.title} ${item.genres.join(' ')} ${item.description}`.toLowerCase().includes(query.trim().toLowerCase()));
   return <PageShell eyebrow="SEARCH THE COLLECTION" title={query ? <>Results for <em>“{query}”</em></> : <>What are you <em>in the mood for?</em></>} description={query ? `${matches.length} ${matches.length === 1 ? 'story' : 'stories'} found in the ScreenHub collection.` : 'Search for a title, genre, or feeling.'}><form className="large-search" onSubmit={(event) => event.preventDefault()}><span>⌕</span><input autoFocus aria-label="Search the collection" placeholder="Try “space”, “animation”, or a title..." value={query} onChange={(event) => setParams(event.target.value ? { q: event.target.value } : {})} /><button type="button" onClick={() => setParams({})}>Clear</button></form>{query && <section className="result-grid">{matches.length ? matches.map((item) => <PosterCard key={item.title} item={item} watchlist={watchlist} toggleWatchlist={toggleWatchlist} />) : <p className="empty-state">No titles match that search yet. Try a genre, like “Sci-Fi” or “Horror”.</p>}</section>}{!query && <div className="search-genres"><span>POPULAR GENRES</span>{genres.slice(0, 6).map((genre) => <Link key={genre} to={`/genre/${genre.toLowerCase()}`}>{genre} <b>↗</b></Link>)}</div>}</PageShell>;
 }
 
 function WatchlistPage({ watchlist, toggleWatchlist }) {
-  const { movies } = useContext(TmdbPostersContext);
+  const { movies } = useContext(FreeMoviesContext);
   const items = movies.filter((item) => watchlist.includes(item.title));
   return <PageShell eyebrow="SAVED FOR LATER" title={<>Your personal <em>collection.</em></>} description="Every good story you want to come back to, all in one place."><section className="result-grid">{items.length ? items.map((item) => <PosterCard key={item.title} item={item} watchlist={watchlist} toggleWatchlist={toggleWatchlist} />) : <div className="watchlist-empty"><span>＋</span><h2>Your list starts here.</h2><p>Save films as you explore and they’ll be waiting for you here.</p><Link className="primary-btn" to="/browse">Explore the collection</Link></div>}</section></PageShell>;
 }
 
 function TitlePage({ watchlist, toggleWatchlist }) {
-  const { slug = '' } = useParams(); const { movies } = useContext(TmdbPostersContext); const item = movies.find((entry) => titleSlug(entry.title) === slug); const saved = item && watchlist.includes(item.title); const [imageFailed, setImageFailed] = useState(false); const posterPath = item && !imageFailed && item.posterPath;
-  if (!item) return <PageShell eyebrow="SCREENHUB" title="Story not found." description="That title isn’t in our collection yet."><Link to="/browse">Explore the collection →</Link></PageShell>;
-  return <><Header /><main className="title-page"><Link to="/browse" className="back-link detail-back">← Back to discover</Link><section className="title-detail-hero"><div className={`detail-poster art-${item.mood || 'default'} ${posterPath ? 'has-tmdb-poster' : ''}`}>{posterPath && <img src={`https://image.tmdb.org/t/p/w500${posterPath}`} alt={`${item.title} poster`} onError={() => setImageFailed(true)} />}<span>{item.title}</span></div><div className="title-copy"><div className="eyebrow">TMDB MOVIE</div><h1>{item.title}</h1><div className="detail-tags"><span>{item.year}</span><span>{item.genre}</span><span>Movie</span><span className="rating-pill">★ {item.rating}</span></div><p>{item.description}</p><div className="hero-actions"><button className="primary-btn" type="button" onClick={() => document.getElementById('movie-watch-options')?.scrollIntoView({ behavior: 'smooth', block: 'center' })}>▶ Watch options</button><button className="quiet-btn" onClick={() => toggleWatchlist(item.title)}>{saved ? '✓ Saved to my list' : '+ Add to my list'}</button></div></div></section><MovieViewingOptions movie={item} /><section className="title-details"><div><span>ABOUT THIS TITLE</span><h2>A story worth settling in for.</h2><p>{item.description}</p></div><Link className="detail-genre" to={`/genre/${encodeURIComponent(item.genre.toLowerCase())}`}>More {item.genre} films <b>Explore collection →</b></Link></section><MovieRow title="You may also like" items={movies.filter((other) => other.id !== item.id && other.genres.some((itemGenre) => item.genres.includes(itemGenre))).slice(0, 6)} watchlist={watchlist} toggleWatchlist={toggleWatchlist} /><Footer /></main></>;
+  const { slug = '' } = useParams(); const { movies, loading, error } = useContext(FreeMoviesContext); const item = movies.find((entry) => titleSlug(entry.title) === slug); const saved = item && watchlist.includes(item.title); const [imageFailed, setImageFailed] = useState(false); const posterPath = item && !imageFailed && item.posterPath;
+  if (!item && loading) return <PageShell eyebrow="FREE OPEN FILMS" title="Checking the catalog…" description="Verifying the film license and playable video before opening this title." />;
+  if (!item) return <PageShell eyebrow="FREE OPEN FILMS" title="Movie not found." description={error || 'That title is not in our verified free-to-watch catalog.'}><Link to="/browse">Explore free movies →</Link></PageShell>;
+  return <><Header /><main className="title-page"><Link to="/browse" className="back-link detail-back">← Back to free movies</Link><section className="title-detail-hero"><div className={`detail-poster art-${item.mood || 'default'} ${posterPath ? 'has-poster' : ''}`}>{posterPath && <img src={posterPath} alt={`${item.title} poster`} onError={() => setImageFailed(true)} />}<span>{item.title}</span></div><div className="title-copy"><div className="eyebrow">FREE · FULL MOVIE</div><h1>{item.title}</h1><div className="detail-tags"><span>{item.year}</span><span>{item.genre}</span><span>{item.runtime}</span><span className="rating-pill">FREE TO WATCH</span></div><p>{item.description}</p><div className="hero-actions"><button className="primary-btn" type="button" onClick={() => document.getElementById('free-movie-player')?.scrollIntoView({ behavior: 'smooth', block: 'center' })}>▶ Watch full movie</button><button className="quiet-btn" onClick={() => toggleWatchlist(item.title)}>{saved ? '✓ Saved to my list' : '+ Add to my list'}</button></div></div></section><FreeMoviePlayer movie={item} /><section className="title-details"><div><span>FILM DETAILS</span><h2>{item.title}</h2><p>{item.description}</p><p>Created by {item.creator}. Released under {item.licenseName}.</p></div><a className="detail-genre" href={item.licenseUrl} target="_blank" rel="noreferrer">View the film license <b>{item.licenseName} ↗</b></a></section><MovieRow title="More free open movies" items={movies.filter((other) => other.id !== item.id)} watchlist={watchlist} toggleWatchlist={toggleWatchlist} /><Footer /></main></>;
 }
 
-const providerGroups = [
-  { key: 'flatrate', label: 'Stream' },
-  { key: 'free', label: 'Free' },
-  { key: 'ads', label: 'Free with ads' },
-  { key: 'rent', label: 'Rent' },
-  { key: 'buy', label: 'Buy' },
-];
-
-function MovieViewingOptions({ movie }) {
-  const [watchData, setWatchData] = useState(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState('');
-  const [playingTrailer, setPlayingTrailer] = useState(false);
-  const [retryCount, setRetryCount] = useState(0);
-
-  useEffect(() => {
-    let active = true;
-    setLoading(true);
-    setError('');
-    setWatchData(null);
-    setPlayingTrailer(false);
-    supabase.functions.invoke('tmdb-posters', {
-      body: { action: 'watch-options', movie_id: movie.id, country: 'PH' },
-    }).then(({ data, error: invokeError }) => {
-      if (invokeError) {
-        const response = invokeError.context;
-        if (response instanceof Response) {
-          return response.clone().json().catch(() => null).then((details) => {
-            throw new Error(details?.error || `${invokeError.message} (HTTP ${response.status})`);
-          });
-        }
-        throw invokeError;
-      }
-      if (!data || typeof data !== 'object' || (data.trailer_key !== null && data.trailer_key !== undefined && !/^[\w-]{11}$/.test(data.trailer_key))) {
-        throw new Error('TMDB returned invalid movie viewing details.');
-      }
-      if (active) setWatchData(data);
-      return undefined;
-    }).catch((cause) => {
-      if (!active) return;
-      console.error(`Unable to load viewing options for ${movie.title}.`, cause);
-      setError(cause instanceof Error ? cause.message : 'An unexpected error occurred.');
-    }).finally(() => {
-      if (active) setLoading(false);
-    });
-    return () => { active = false; };
-  }, [movie.id, retryCount]);
-
-  const trailerKey = watchData?.trailer_key || movie.trailerKey;
-  const providers = watchData?.providers;
-  const availableGroups = providerGroups.flatMap(({ key, label }) => {
-    const entries = Array.isArray(providers?.[key]) ? providers[key] : [];
-    const unique = [...new Map(entries.filter((provider) => provider && Number.isInteger(provider.provider_id)).map((provider) => [provider.provider_id, provider])).values()];
-    return unique.length ? [{ key, label, entries: unique }] : [];
-  });
-  const whereToWatch = providers?.link || `https://www.justwatch.com/ph/search?q=${encodeURIComponent(movie.title)}`;
-
-  return <section className="movie-viewing-options" id="movie-watch-options" aria-labelledby="movie-viewing-heading">
-    <div className="viewing-options-copy"><div className="eyebrow">OFFICIAL VIEWING OPTIONS</div><h2 id="movie-viewing-heading">Ready to watch?</h2><p>Play the official trailer or check legal streaming and rental services available in the Philippines.</p></div>
-    <div className="viewing-actions">
-      {trailerKey ? <button className="primary-btn" type="button" onClick={() => setPlayingTrailer((playing) => !playing)}>{playingTrailer ? 'Close trailer' : '▶ Play official trailer'}</button> : <a className="primary-btn" href={`https://www.youtube.com/results?search_query=${encodeURIComponent(`${movie.title} official trailer`)}`} target="_blank" rel="noreferrer">Find official trailer ↗</a>}
-      <a className="quiet-btn" href={whereToWatch} target="_blank" rel="noreferrer">{providers?.link ? 'See streaming options ↗' : 'Check availability ↗'}</a>
-    </div>
-    {playingTrailer && trailerKey && <div className="official-trailer"><iframe src={`https://www.youtube-nocookie.com/embed/${trailerKey}?autoplay=1&playsinline=1&rel=0`} title={`${movie.title} official trailer`} allow="autoplay; encrypted-media; picture-in-picture" allowFullScreen referrerPolicy="strict-origin-when-cross-origin" /></div>}
-    {loading && <p className="provider-status" role="status">Checking legal services in the Philippines…</p>}
-    {error && <div className="provider-error" role="alert"><span>{error}</span><button type="button" onClick={() => setRetryCount((count) => count + 1)}>Retry</button></div>}
-    {!loading && !error && <div className="provider-list">
-      {availableGroups.length ? availableGroups.map(({ key, label, entries }) => <div className="provider-group" key={key}><h3>{label}</h3><div>{entries.map((provider) => <span className="provider-badge" key={provider.provider_id}>{provider.logo_path && <img src={`https://image.tmdb.org/t/p/w92${provider.logo_path}`} alt="" loading="lazy" />}<span>{provider.provider_name}</span></span>)}</div></div>) : <p className="provider-status">TMDB currently lists no streaming services for this movie in the Philippines. Check again later for availability.</p>}
-    </div>}
-    <p className="provider-disclaimer">Availability is provided by TMDB and may change. ScreenHub does not host or stream full movies.</p>
+function FreeMoviePlayer({ movie }) {
+  const [playing, setPlaying] = useState(false);
+  return <section className="movie-viewing-options free-movie-player-section" id="free-movie-player" aria-labelledby="free-movie-heading">
+    <div className="viewing-options-copy"><div className="eyebrow">FREE FULL MOVIE · LICENSE VERIFIED</div><h2 id="free-movie-heading">Watch {movie.title}</h2><p>This complete film is free to watch from Internet Archive. Playback is provided by the source; ScreenHub does not host the video.</p></div>
+    <div className="viewing-actions"><button className="primary-btn" type="button" onClick={() => setPlaying((current) => !current)}>{playing ? 'Close player' : '▶ Play full movie'}</button><a className="quiet-btn" href={`https://archive.org/details/${encodeURIComponent(movie.archiveId)}`} target="_blank" rel="noreferrer">Open source ↗</a></div>
+    {playing && <div className="archive-player"><iframe src={`${movie.embedUrl}?autoplay=1`} title={`Play the complete movie ${movie.title}`} allow="autoplay; fullscreen; picture-in-picture" allowFullScreen referrerPolicy="strict-origin-when-cross-origin" /></div>}
+    <p className="license-disclaimer">“{movie.title}” by {movie.creator} · <a href={movie.licenseUrl} target="_blank" rel="noreferrer">{movie.licenseName}</a> · <a href={`https://archive.org/details/${encodeURIComponent(movie.archiveId)}`} target="_blank" rel="noreferrer">Source and license details</a>.</p>
   </section>;
 }
 
-function Footer() { return <><div className="tmdb-attribution"><a href="https://www.themoviedb.org/" target="_blank" rel="noreferrer" aria-label="Visit The Movie Database">TMDB</a><p>This application uses TMDB and the TMDB APIs but is not endorsed, certified, or otherwise approved by TMDB.</p></div><footer className="site-footer"><Link className="wordmark" to="/home">SCREEN<span>HUB</span></Link><span>Good stories bring us together.</span><Link to="/profile">Your account ↗</Link></footer></>; }
+function Footer() { return <><div className="source-attribution"><a href="https://archive.org/details/open_source_movies" target="_blank" rel="noreferrer" aria-label="Visit Internet Archive">OPEN FILMS</a><p>Free-to-watch films are served by Internet Archive and shown under their listed public-domain or Creative Commons licenses. Credits and license links appear with each film.</p></div><footer className="site-footer"><Link className="wordmark" to="/home">SCREEN<span>HUB</span></Link><span>Good stories bring us together.</span><Link to="/profile">Your account ↗</Link></footer></>; }
 
 function Profile() {
   const { profile, session, setProfile } = useAuth(); const navigate = useNavigate(); const [username, setUsername] = useState(profile?.username ?? ''); const [avatar, setAvatar] = useState(profile?.avatar ?? ''); const [characterQuery, setCharacterQuery] = useState(''); const [characters, setCharacters] = useState([]); const [searching, setSearching] = useState(false); const [searchError, setSearchError] = useState(''); const [password, setPassword] = useState(''); const [notice, setNotice] = useState(''); const [error, setError] = useState(''); const [busy, setBusy] = useState(false);
@@ -634,10 +448,6 @@ function Profile() {
     if (passwordError) setError(passwordError.message); else { setProfile({ ...profile, username: username.trim(), avatar }); setPassword(''); setNotice('Your profile has been saved.'); }
   }
   return <><Header /><main className="profile-page"><Link className="back-link" to="/home">← Back to ScreenHub</Link><div className="profile-panel"><div className="eyebrow">ACCOUNT</div><h1>Your profile</h1><p className="muted">Manage your username, anime avatar, and sign-in details.</p><form className="form" onSubmit={save}><Field label="Username" value={username} onChange={setUsername} minLength={3} maxLength={30} required /><div className="anime-avatar-picker"><label className="field"><span>Find an anime character</span><input type="search" value={characterQuery} onChange={(event) => setCharacterQuery(event.target.value)} placeholder="Try Naruto, Gojo, or Luffy" /></label><p className="avatar-help">Type at least two characters. Choose a result to preview it in your profile menu.</p>{searching && <p className="avatar-help">Searching characters…</p>}{searchError && <p className="form-error">{searchError}</p>}{characters.length > 0 && <div className="anime-avatar-grid">{characters.map((character) => <button type="button" key={character.id} className={avatar === character.image ? 'anime-avatar-choice selected' : 'anime-avatar-choice'} onClick={() => setAvatar(character.image)} aria-pressed={avatar === character.image}><img src={character.image} alt={character.name} loading="lazy" /><span>{character.name}</span></button>)}</div>}{avatar && <button className="clear-avatar" type="button" onClick={() => setAvatar('')}>Use initials instead</button>}<small className="avatar-credit">Character data via <a href="https://tenrai.org/" target="_blank" rel="noreferrer">Tenrai</a>, a free unofficial MyAnimeList API.</small></div><Field label="New password (leave blank to keep current)" type="password" value={password} onChange={setPassword} minLength={8} /><div className="profile-email"><span>Email</span><strong>{session?.user?.email}</strong><small>Email changes are managed through Supabase Auth.</small></div>{error && <p className="form-error">{error}</p>}{notice && <p className="form-success">{notice}</p>}<button className="primary-btn" disabled={busy}>{busy ? 'Saving…' : 'Save changes'}</button></form><button className="signout-link" onClick={async () => { await supabase.auth.signOut(); navigate('/'); }}>Sign out</button></div></main></>;
-}
-
-function Series() {
-  return <><Header /><main className="series-page"><div className="series-hero"><div className="hero-shade" /><div className="series-copy"><div className="eyebrow">#1 ON SCREENHUB</div><h1>SQUID<br />GAME</h1><p>2021 – 2024　·　TV-MA　·　Thriller · Drama · Mystery</p><p>456 cash-strapped players accept a mysterious invitation to compete in deadly children's games for a life-changing prize.</p><a className="primary-btn hero-btn" href="https://www.youtube.com/results?search_query=Squid+Game+official+trailer" target="_blank" rel="noreferrer">▶ &nbsp;Play trailer</a></div></div><section className="catalog-section"><div className="section-heading"><h2>More to discover</h2><Link to="/home">Browse all</Link></div><div className="poster-row">{media.slice(0, 6).map((item) => <div className="poster-card" key={item.title}><div className="poster-placeholder"><span>{item.title}</span></div><span>{item.title}</span></div>)}</div></section></main></>;
 }
 
 export default App;
