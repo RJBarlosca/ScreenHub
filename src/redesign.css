@@ -21,6 +21,20 @@ body{background:var(--ink);color:var(--cream);letter-spacing:.01em}button{color:
 .poster-art.has-tmdb-poster .art-glow{display:none}
 .poster-service-notice{max-width:1000px;display:flex;align-items:center;justify-content:center;gap:14px;margin:12px auto;padding:10px 16px;border:1px solid #ffffff22;border-radius:4px;background:#171719;color:#c9c6c7;font-size:12px;text-align:center}
 .poster-service-notice.success{border-color:#4f9c6b66;color:#9fe0b0}
+.home-page{min-width:0;overflow-x:clip}
+.catalog-section{min-width:0;max-width:100%}
+.poster-row{display:flex;grid-auto-columns:unset;grid-auto-flow:unset;width:100%;max-width:100%;gap:14px;overflow-x:auto;overflow-y:hidden;padding:2px 2px 15px;overscroll-behavior-x:contain;scrollbar-width:thin;scrollbar-color:#383838 transparent;scroll-snap-type:x mandatory}
+.poster-card{flex:0 0 clamp(155px,17vw,205px);min-width:0;scroll-snap-align:start}
+.featured-hero{isolation:isolate;overflow:hidden;background:#141414}
+.featured-hero::before,.featured-hero::after{content:none}
+.feature-backdrop,.feature-video{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
+.feature-backdrop{z-index:0;filter:saturate(.88)}
+.feature-video{z-index:1;border:0;pointer-events:none;transform:scale(1.12);opacity:.78}
+.featured-hero .hero-grain{z-index:2;pointer-events:none}
+.featured-hero .hero-copy,.featured-hero .hero-index{z-index:3}
+.genre-tile::before{z-index:0;background-image:linear-gradient(0deg,#0a090bf0 0%,#0a090b22 72%),radial-gradient(ellipse at 100% 0%,var(--tile,#694439),transparent 70%),var(--genre-image,none);background-position:center;background-size:cover;opacity:.84}
+.genre-tile>span,.genre-tile>strong,.genre-tile>i{position:relative;z-index:1}
+@media(max-width:700px){.poster-card{flex-basis:155px}.featured-hero .feature-video{opacity:.68}}
 .poster-service-notice.error{border-color:#e95e4f77;color:#ffb4ad}
 .poster-service-notice button{padding:5px 12px;border:1px solid currentColor;border-radius:3px;background:transparent;color:inherit;font-size:11px}
 .poster-service-notice button:hover{background:#ffffff12}

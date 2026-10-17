@@ -94,7 +94,7 @@ const tmdbGenreNames = {
 };
 const titleSlug = (title) => title.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '');
 const TmdbPostersContext = createContext({ movies: [], loading: false, error: '' });
-const posterCacheKey = 'screenhub-tmdb-movies-v3';
+const posterCacheKey = 'screenhub-tmdb-movies-v4';
 const posterCacheDuration = 7 * 24 * 60 * 60 * 1000;
 let pendingPosterRequest;
 
@@ -128,7 +128,9 @@ function readPosterCache() {
         typeof movie.title === 'string' &&
         typeof movie.release_date === 'string' &&
         Array.isArray(movie.genre_ids) &&
-        typeof movie.vote_average === 'number'
+        typeof movie.vote_average === 'number' &&
+        (movie.backdrop_path === null || typeof movie.backdrop_path === 'string') &&
+        (movie.featured_video_key === undefined || movie.featured_video_key === null || /^[\w-]{11}$/.test(movie.featured_video_key))
       )
     ));
   } catch (error) {
@@ -147,7 +149,7 @@ function TmdbPostersProvider({ children }) {
 
   useEffect(() => {
     if (!session?.user?.id || !supabase) return undefined;
-    const missing = media.filter((item) => !Object.hasOwn(tmdbMovies, item.title)).map(({ title, year }) => ({ title, year }));
+    const missing = media.filter((item) => !Object.hasOwn(tmdbMovies, item.title)).map(({ title, year }) => ({ title, year, featured: title === media[0].title }));
     if (!missing.length) { setLoaded(true); return undefined; }
     let active = true;
     setLoading(true);
@@ -204,6 +206,8 @@ function TmdbPostersProvider({ children }) {
       description: movie.overview || 'No overview is available for this title.',
       mood: seed.mood,
       posterPath: movie.poster_path,
+      backdropPath: movie.backdrop_path,
+      trailerKey: movie.featured_video_key || null,
     }];
   });
 
@@ -386,8 +390,18 @@ function Home({ watchlist, toggleWatchlist }) {
   const { movies, loading, error } = useContext(TmdbPostersContext);
   const featured = movies[0];
   if (!featured) return <><Header /><PosterServiceNotice /><main className="home-page">{loading ? <p className="empty-state">Loading movies from TMDB…</p> : error ? <p className="empty-state">We couldn’t load TMDB movies. Use Retry above to try again.</p> : <p className="empty-state">No movies from TMDB are available in the catalog yet.</p>}<Footer /></main></>;
-  return <><Header /><PosterServiceNotice /><main className="home-page"><section className={`featured-hero feature-${featured.mood}`}><div className="hero-grain"/><div className="hero-copy"><div className="eyebrow"><span className="live-dot" /> VERIFIED ON TMDB</div><div className="hero-label">FEATURED MOVIE</div><h1>{featured.title}</h1><p>{featured.description}</p><div className="hero-meta"><span className="rating-pill">★ {featured.rating}</span><span>{featured.year}</span><span>{featured.genre}</span></div><div className="hero-actions"><Link className="primary-btn hero-btn" to={`/title/${titleSlug(featured.title)}`}>View movie <span>→</span></Link><button className="quiet-btn" onClick={() => toggleWatchlist(featured.title)}>{watchlist.includes(featured.title) ? '✓ In my list' : '+ Add to my list'}</button></div></div><div className="hero-index"><span>01</span><i /> {movies.length.toString().padStart(2, '0')}</div></section>
-    <div className="home-intro"><div><div className="eyebrow">CURATED FOR YOUR NEXT MOVIE NIGHT</div><h2>Find your <em>kind</em> of story.</h2></div><Link className="all-genres-link" to="/browse">Browse all genres <span>→</span></Link></div><div className="genre-shortcuts">{genres.slice(0, 6).map((genre, index) => <Link key={genre} className={`genre-tile genre-tile-${index}`} to={`/genre/${encodeURIComponent(genre.toLowerCase())}`}><span>0{index + 1}</span><strong>{genre}</strong><i>↗</i></Link>)}</div>
+  const heroBackdrop = featured.backdropPath || featured.posterPath;
+  return <><Header /><PosterServiceNotice /><main className="home-page"><section className={`featured-hero feature-${featured.genre.toLowerCase().replace(/[^a-z0-9]+/g, '-')}`}>
+    {heroBackdrop && <img className="feature-backdrop" src={`https://image.tmdb.org/t/p/original${heroBackdrop}`} alt="" aria-hidden="true" />}
+    {featured.trailerKey && <iframe className="feature-video" src={`https://www.youtube-nocookie.com/embed/${featured.trailerKey}?autoplay=1&mute=1&controls=0&loop=1&playlist=${featured.trailerKey}&playsinline=1&modestbranding=1&rel=0`} title={`Muted looping trailer for ${featured.title}`} aria-hidden="true" tabIndex="-1" allow="autoplay; encrypted-media; picture-in-picture" referrerPolicy="strict-origin-when-cross-origin" />}
+    <div className="hero-grain" />
+    <div className="hero-copy"><div className="eyebrow"><span className="live-dot" /> VERIFIED ON TMDB</div><div className="hero-label">FEATURED MOVIE</div><h1>{featured.title}</h1><p>{featured.description}</p><div className="hero-meta"><span className="rating-pill">★ {featured.rating}</span><span>{featured.year}</span><span>{featured.genre}</span></div><div className="hero-actions"><Link className="primary-btn hero-btn" to={`/title/${titleSlug(featured.title)}`}>View movie <span>→</span></Link><button className="quiet-btn" onClick={() => toggleWatchlist(featured.title)}>{watchlist.includes(featured.title) ? '✓ In my list' : '+ Add to my list'}</button></div></div><div className="hero-index"><span>01</span><i /> {movies.length.toString().padStart(2, '0')}</div></section>
+    <div className="home-intro"><div><div className="eyebrow">CURATED FOR YOUR NEXT MOVIE NIGHT</div><h2>Find your <em>kind</em> of story.</h2></div><Link className="all-genres-link" to="/browse">Browse all genres <span>→</span></Link></div><div className="genre-shortcuts">{genres.slice(0, 6).map((genre, index) => {
+      const genreMovie = movies.find((movie) => movie.genres.includes(genre));
+      const image = genreMovie && (genreMovie.backdropPath || genreMovie.posterPath);
+      const style = image ? { '--genre-image': `url("https://image.tmdb.org/t/p/w780${image}")` } : undefined;
+      return <Link key={genre} className={`genre-tile genre-tile-${index}`} style={style} to={`/genre/${encodeURIComponent(genre.toLowerCase())}`}><span>0{index + 1}</span><strong>{genre}</strong><i>↗</i></Link>;
+    })}</div>
     <MovieRow title="Popular this week" items={movies.slice(0, 8)} watchlist={watchlist} toggleWatchlist={toggleWatchlist} /><MovieRow title="Made for the big screen" items={movies.filter((item) => ['Adventure', 'Sci-Fi', 'Action'].includes(item.genre)).slice(0, 7)} watchlist={watchlist} toggleWatchlist={toggleWatchlist} /><MovieRow title="Stories after dark" items={movies.filter((item) => item.genres.some((itemGenre) => ['Horror', 'Thriller'].includes(itemGenre)))} watchlist={watchlist} toggleWatchlist={toggleWatchlist} link="/genre/horror" /><Footer /></main></>;
 }
 

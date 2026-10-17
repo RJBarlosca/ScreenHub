@@ -5,7 +5,7 @@ const corsHeaders = {
   'Content-Type': 'application/json',
 };
 
-type MovieRequest = { title: string; year?: number };
+type MovieRequest = { title: string; year?: number; featured?: boolean };
 type MovieSearchResult = {
   id: number;
   title: string;
@@ -15,7 +15,10 @@ type MovieSearchResult = {
   vote_average: number;
   overview: string;
   poster_path: string | null;
+  backdrop_path: string | null;
+  featured_video_key?: string | null;
 };
+type MovieVideo = { key: string; site: string; type: string; official: boolean; published_at?: string };
 
 function jsonResponse(body: unknown, status = 200) {
   return new Response(JSON.stringify(body), { status, headers: corsHeaders });
@@ -51,7 +54,10 @@ Deno.serve(async (request) => {
     if (item.year !== undefined && (!Number.isInteger(item.year) || item.year < 1888 || item.year > new Date().getFullYear() + 10)) {
       return jsonResponse({ error: `Invalid release year for ${item.title}.` }, 400);
     }
-    titles.push({ title: item.title.trim(), year: item.year });
+    if (item.featured !== undefined && typeof item.featured !== 'boolean') {
+      return jsonResponse({ error: `Invalid featured flag for ${item.title}.` }, 400);
+    }
+    titles.push({ title: item.title.trim(), year: item.year, featured: item.featured });
   }
 
   const movies: Record<string, MovieSearchResult | null> = {};
@@ -67,7 +73,7 @@ Deno.serve(async (request) => {
       if (movie.year) search.searchParams.set('primary_release_year', String(movie.year));
 
       let response = await fetch(search, {
-        headers: { Authorization: `Bearer ${token}`, Accept: 'application/json' },
+        headers: { Authorization: 'Bearer ' + token, Accept: 'application/json' },
       });
       if (!response.ok) throw new Error(`TMDB returned HTTP ${response.status}.`);
       let data = await response.json();
@@ -88,6 +94,28 @@ Deno.serve(async (request) => {
         match = results.find((result) =>
           [result.title, result.original_title].some((title) => typeof title === 'string' && normalizeTitle(title) === wanted)
         );
+      }
+
+      if (match && movie.featured) {
+        const videosUrl = new URL(`https://api.themoviedb.org/3/movie/${match.id}/videos`);
+        videosUrl.searchParams.set('language', 'en-US');
+        try {
+          const videoResponse = await fetch(videosUrl, {
+            headers: { Authorization: 'Bearer ' + token, Accept: 'application/json' },
+          });
+          if (!videoResponse.ok) {
+            console.warn(`TMDB trailer lookup returned HTTP ${videoResponse.status} for ${movie.title}.`);
+          } else {
+            const videoData = await videoResponse.json();
+            const videos: MovieVideo[] = Array.isArray(videoData.results) ? videoData.results : [];
+            const trailer = videos
+              .filter((video) => video.site === 'YouTube' && ['Trailer', 'Teaser'].includes(video.type) && /^[\w-]{11}$/.test(video.key))
+              .sort((a, b) => Number(b.official) - Number(a.official) || Number(b.type === 'Trailer') - Number(a.type === 'Trailer'))[0];
+            match = { ...match, featured_video_key: trailer?.key ?? null };
+          }
+        } catch (error) {
+          console.warn(`TMDB trailer lookup failed for ${movie.title}.`, error);
+        }
       }
 
       movies[movie.title] = match ?? null;
